@@ -14,6 +14,7 @@ from discord import Game
 from discord.ext.commands import Bot
 from odbc.mssql import *
 from coco.CocoFunctions import *
+from monitor.MemberMonitor import *
 
 
 def setup_logging_to_file(filename):
@@ -116,14 +117,23 @@ async def on_message(message):
     await client.process_commands(message)
 
 
+@client.event
+async def on_member_join(member):
+    await member_joined_discord(client, member)
+
+
+@client.event
+async def on_member_remove(member):
+    member_left_discord(client, member)
+
+
 @client.event  # 0004
 async def on_ready():
     try:
-        await client.change_presence(game=Game(name="TESTING - IN DEVELOPMENT"))#?help
         print("********************************************Login*Details***********************************************")
         print("     Logged in as " + client.user.name)
-        print("     Client User ID: " + client.user.id)
-        print("     Invite at: https://discordapp.com/oauth2/authorize?client_id=" + client.user.id + "&scope=bot")
+        print("     Client User ID: " + str(client.user.id))
+        print("     Invite at: https://discordapp.com/oauth2/authorize?client_id=" + str(client.user.id) + "&scope=bot")
         print("********************************************************************************************************")
     except Exception as e:
         log_exception(str(e))
