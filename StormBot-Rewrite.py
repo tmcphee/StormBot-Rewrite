@@ -12,6 +12,9 @@ import os
 from os import path
 from discord import Game
 from discord.ext.commands import Bot
+from odbc.mssql import *
+from coco.CocoFunctions import *
+
 
 def setup_logging_to_file(filename):
     logging.basicConfig(filename=filename, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
@@ -36,6 +39,7 @@ def log_exception(e):
             line=trace_back.tb_lineno))
 
 
+_sql = mssql()
 setup_logging_to_file('StormBot_log.txt')
 #CONFIG
 text_file = open("StormBot.config", "r")
@@ -52,30 +56,31 @@ server_startime = time.time()
 retry_flag = True
 retry_count = 0
 while retry_flag:
-  try:
     try:
-        conn = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
-            + password)
-        cursor = conn.cursor()
-        server_env = 'Linux'
-    except:
-        conn = pyodbc.connect('DRIVER={SQL SERVER};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
-                               + password)
-        cursor = conn.cursor()
-        server_env = 'Windows'
-    retry_flag = False
-    print('Connection to SQL server - Succeeded')
-    print('Bot running in ' + str(server_env) + ' environment')
-  except Exception as e:
-    log_exception(str(e))
-    retry_count = retry_count + 1
-    time.sleep(2)
-    if retry_count == 5:
-        print('Connection to SQL server - Failed')
-        sys.exit(2)
+        try:
+            conn = pyodbc.connect(
+                'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server_addr + ';DATABASE=' + database
+                + ';UID=' + username + ';PWD=' + password)
+            cursor = conn.cursor()
+            server_env = 'Linux'
+        except:
+            conn = pyodbc.connect(
+                'DRIVER={SQL SERVER};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
+                + password)
+            cursor = conn.cursor()
+            server_env = 'Windows'
+        retry_flag = False
+        print('Connection to SQL server - Succeeded')
+        print('Bot running in ' + str(server_env) + ' environment')
+    except Exception as e:
+        log_exception(str(e))
+        retry_count = retry_count + 1
+        time.sleep(2)
+        if retry_count == 5:
+            print('Connection to SQL server - Failed')
+            sys.exit(2)
 
-SQL = path.exists("pythonsqlite.db") #Resumes or creates Database file
+SQL = path.exists("pythonsqlite.db")  # Resumes or creates Database file
 if SQL is True:
     print("SQL INTERNAL SERVER -- DATABASE RESUMING TO SAVED STATE")
     connect = sqlite3.connect('pythonsqlite.db')
@@ -86,10 +91,13 @@ else:
     connect = sqlite3.connect('pythonsqlite.db')
     cursor2 = connect.cursor()
     cursor2.execute("""CREATE TABLE Presets
-                          (NoVoice integer , NoMessages integer, GuestRole text, ActiveRole text, InactiveRole text, BeginDate text, StombotChannel text)
+                          (NoVoice integer , NoMessages integer, GuestRole text, ActiveRole text, InactiveRole text, 
+                          BeginDate text, StombotChannel text)
                        """)
     connect.commit()
-    cursor2.execute("""INSERT INTO Presets VALUES (?,?,?,?,?,?,?)""", (120, 10, "381911719901134850", "[TEST]Discord Active", "[TEST]Discord Inactive", '2018-08-05 20:59:08', '2018-08-05 20:59:08'))
+    cursor2.execute("""INSERT INTO Presets VALUES (?,?,?,?,?,?,?)""", (120, 10, "381911719901134850",
+                                                                       "[TEST]Discord Active", "[TEST]Discord Inactive",
+                                                                       '2018-08-05 20:59:08', '2018-08-05 20:59:08'))
     connect.commit()
     cursor2.execute("""CREATE TABLE Fun
                               (joke text , insult text)
@@ -101,46 +109,55 @@ else:
 BOT_PREFIX = "?"
 client = Bot(command_prefix=BOT_PREFIX)
 
-def _sql_commit(query, *params):
-    global cursor, conn
-    try:
-        cursor.execute(query, *params)
-        conn.commit()
-    except Exception as e:
-        print(e)
-        log_exception(e)
-        conn.close()
-        try:
-            conn = pyodbc.connect(
-                'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
-                + password)
-            cursor = conn.cursor()
-        except:
-            conn = pyodbc.connect(
-                'DRIVER={SQL SERVER};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
-                + password)
-            cursor = conn.cursor()
-        _sql_commit(query, *params)
+
+@client.event
+async def on_message(message):
+    # any on_message function should be placed before process_commands
+    await client.process_commands(message)
 
 
-def _sql_select(query, *params):
-    global cursor, conn
+@client.event  # 0004
+async def on_ready():
     try:
-        cursor.execute(query, *params)
-        return cursor
+        await client.change_presence(game=Game(name="TESTING - IN DEVELOPMENT"))#?help
+        print("********************************************Login*Details***********************************************")
+        print("     Logged in as " + client.user.name)
+        print("     Client User ID: " + client.user.id)
+        print("     Invite at: https://discordapp.com/oauth2/authorize?client_id=" + client.user.id + "&scope=bot")
+        print("********************************************************************************************************")
     except Exception as e:
-        log_exception(e)
-        conn.close()
-        try:
-            conn = pyodbc.connect(
-                'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
-                + password)
-            cursor = conn.cursor()
-        except:
-            conn = pyodbc.connect(
-                'DRIVER={SQL SERVER};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
-                + password)
-            cursor = conn.cursor()
-        _sql_select(query, *params)
+        log_exception(str(e))
+
+
+async def list_servers():
+    try:
+        await client.wait_until_ready()
+        while not client.is_closed:
+            print("********************************************Current*Servers*********************************************")
+            for server in client.servers:
+                print("     " + str(server.name) + " (Members: " + str(len(server.members)) + ") [" + str(server.id) + "]")
+            print("********************************************************************************************************")
+            await asyncio.sleep(60*60)
+    except Exception as e:
+        log_exception(str(e))
+
+
+# Begin commands
+@client.command(pass_context=True)
+async def purge(ctx, clan):
+    clan_ids = {
+        1: 2926181,
+        2: 3089039,
+        3: 3092882,
+        4: 3143454,
+        5: 3208812,
+    }
+    clan_id = clan_ids.get(int(clan))
+    cur = mssql.select(_sql, "select * from clans where ClanId = ?", clan_id)
+    for row in cur:
+        print(row.ClanName)
+        await client.say("Purging " + str(row.ClanName))
+        await update_coco_roles(_sql, client, clan_id)
+
 
 client.run(TOKEN)
