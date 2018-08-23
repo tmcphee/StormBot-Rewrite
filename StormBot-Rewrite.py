@@ -160,4 +160,20 @@ async def purge(ctx, clan):
         await update_coco_roles(_sql, client, clan_id)
 
 
+@client.command(pass_conext=True)  # have this function run at least once a week to audit
+async def users():
+    server_id = '162706186272112640'  # StormBot
+    server = client.get_server(server_id)
+    for member in server.members:
+        mssql.update(_sql, "if not exists(select * from DiscordUsers where DiscordID=?) begin insert into DiscordUsers"
+                           " (DiscordID,UserName,Nickname,ServerID) values(?,?,?,?) end",
+                     str(member.id), str(member.id), str(member), str(member.display_name), server_id)
+        for role in member.roles:
+            mssql.update(_sql, "if not exists(select * from DiscordRoles_Users where DiscordID=? and RoleId=?) "
+                               "begin insert into DiscordRoles_Users(DiscordID,RoleId) values(?,?) end", str(member.id),
+                         str(role.id), str(member.id), str(role.id))
+            print(str(role.name))
+        print(str(member))
+
+
 client.run(TOKEN)

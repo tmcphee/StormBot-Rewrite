@@ -65,4 +65,4 @@ class mssql:
                     'DRIVER={SQL SERVER};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
                     + password)
                 cursor = conn.cursor()
-            #self.select(query, *params)
+            # self.select(query, *params)

@@ -13,7 +13,6 @@ server = str(storm_config[0]).strip()
 database = str(storm_config[1]).strip()
 username = str(storm_config[2]).strip()
 _password = str(storm_config[3]).strip()
-driver = str(storm_config[5]).strip()
 
 
 async def update_coco_roles(sql, client, clan_id):
@@ -29,9 +28,8 @@ async def update_coco_roles(sql, client, clan_id):
         user_id = row[1]
         clan_member = discord_server.get_member(user_id)
         current_roles = fetch_roles(clan_member)
-        cur2 = mssql.select(sql, "select d.* from StageDiscordRoleChange r join DiscordRoleDef d on "
-                                      "d.RoleId=r.RoleId where r.MembershipId='" + str(member_id)
-                                 + "' and Commited = 0")
+        cur2 = mssql.select(sql, """"select d.* from StageDiscordRoleChange r join DiscordRoleDef d on "
+                                      "d.RoleId=r.RoleId where r.MembershipId=? and Commited = 0""", str(member_id))
         for role in cur2:
             role_name = role[1]
             try:
@@ -41,7 +39,7 @@ async def update_coco_roles(sql, client, clan_id):
                                   "on d.RoleId=r.RoleId where r.MembershipId = '" + str(member_id)
                                   + "' and d.RoleName = '" + role_name + "'")
                 if role_name == 'Low Activity':
-                    low_activity_count += 1
+                    # low_activity_count += 1
                     try:
                         for role_cur in current_roles:
                             if role_cur in low_activity_roles_remove:
@@ -53,6 +51,7 @@ async def update_coco_roles(sql, client, clan_id):
                         print(e)
             except Exception as e:
                 print(e)
+
     embed = purge_results(clan_id, low_activity_count, kicked_count)
     await client.say(embed=embed)
 
