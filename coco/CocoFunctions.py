@@ -13,6 +13,10 @@ server = str(storm_config[0]).strip()
 database = str(storm_config[1]).strip()
 username = str(storm_config[2]).strip()
 _password = str(storm_config[3]).strip()
+<<<<<<< HEAD
+=======
+#driver = str(storm_config[5]).strip()
+>>>>>>> refs/remotes/origin/Current
 
 
 async def update_coco_roles(sql, client, clan_id):
