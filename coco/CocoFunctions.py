@@ -1,6 +1,7 @@
 import discord
 import pyodbc
 from odbc.mssql import *
+import time
 
 
 # CONFIG
@@ -13,57 +14,102 @@ server = str(storm_config[0]).strip()
 database = str(storm_config[1]).strip()
 username = str(storm_config[2]).strip()
 _password = str(storm_config[3]).strip()
-<<<<<<< HEAD
-=======
-#driver = str(storm_config[5]).strip()
->>>>>>> refs/remotes/origin/Current
 
 
-async def update_coco_roles(sql, client, clan_id):
-    low_activity_roles_remove = ['Clan 1 Member', 'Clan 2 Member', 'Clan 3 Member', 'Clan 4 Member', 'Clan 5 Member']
+async def update_coco_roles(sql, client, clan_id, clan_name):
+    # HANDLE ROLES CHANGES AND LOW ACTIVITY
     discord_server = client.get_server(server_id)
-    cur = mssql.select(sql, "select distinct r.MembershipId, User_ID from StageDiscordRoleChange r join "
+    cur = mssql.select(sql, "select distinct r.MembershipId, r.[User_ID] from StageDiscordRoleChange r join "
                                  "ClanMembers m on m.MembershipId=r.MembershipId where Commited = 0 and m.ClanId=?"
                             , clan_id)
+    rows = cur.fetchall()
     low_activity_count = 0
     kicked_count = 0
-    for row in cur:
-        member_id = row[0]
-        user_id = row[1]
-        clan_member = discord_server.get_member(user_id)
-        current_roles = fetch_roles(clan_member)
-        cur2 = mssql.select(sql, """"select d.* from StageDiscordRoleChange r join DiscordRoleDef d on "
-                                      "d.RoleId=r.RoleId where r.MembershipId=? and Commited = 0""", str(member_id))
-        for role in cur2:
-            role_name = role[1]
-            try:
-                r = discord.utils.get(discord_server.roles, name=role_name)
-                await client.add_roles(clan_member, r)
-                mssql.update(sql, "update r set Commited = 1 from StageDiscordRoleChange r join DiscordRoleDef d "
-                                  "on d.RoleId=r.RoleId where r.MembershipId = '" + str(member_id)
-                                  + "' and d.RoleName = '" + role_name + "'")
-                if role_name == 'Low Activity':
-                    # low_activity_count += 1
-                    try:
-                        for role_cur in current_roles:
-                            if role_cur in low_activity_roles_remove:
+    frequenter_count = 0
+    veteran_count = 0
+    respected_count = 0
+    do_not_remove = ['Founder', 'Clan Leader', 'Admin', 'Ascended Processors', 'Hidden Admin']
+    for row in rows:
+        membership_id = row.MembershipId
+        discord_id = row.User_ID
+        discord_member = discord_server.get_member(discord_id)
+        print("Updating Membership: " + str(membership_id) + ", Discord Member: " + str(discord_member))
 
-                                remove = discord.utils.get(discord_server.roles, name=role_cur)
-                                await client.remove_roles(clan_member, remove)
-                        await low_activity(client, clan_member)
-                    except Exception as e:
-                        print(e)
-            except Exception as e:
-                print(e)
+        # REMOVE ALL ROLES FROM MEMBER
+        current_roles = fetch_roles(discord_member)
+        for role in current_roles:
+            if role in do_not_remove:
+                await client.say("Cannot remove role " + str(role) + " from " + str(discord_member))
+                continue
+            else:
+                await remove_roles(client, role, discord_member)
+                print("Removed " + str(role) + " from " + str(discord_member))
 
-    embed = purge_results(clan_id, low_activity_count, kicked_count)
+        # ADD NEW ROLES TO MEMBER
+        cur2 = mssql.select(sql, "select * from StageDiscordRoleChange r where MembershipId=? and Commited=0"
+                            , membership_id)
+        rows2 = cur2.fetchall()
+        for new_roles in rows2:
+            role_name = new_roles.RoleName
+            r = discord.utils.get(discord_server.roles, name=role_name)
+            await client.add_roles(discord_member, r)
+            print("Added role " + str(r) + " to Member " + str(discord_member))
+            if role_name == 'Low Activity':
+                low_activity_count += 1
+                await low_activity(client, discord_member)
+            if role_name == 'Frequenter':
+                frequenter_count += 1
+            if role_name == 'Veteran':
+                veteran_count += 1
+            if role_name == 'Respected':
+                respected_count += 1
+            mssql.update(sql, "update r set Commited=1 from StageDiscordRoleChange r where RoleName = ? "
+                              "and MembershipId=?", role_name, membership_id)
+
+    # HANDLE KICKED MEMBERS
+    cur3 = mssql.select(sql, "select r.*,m.DiscordID from StageRemoveClanMember r join ClanMembers m on "
+                             "m.MembershipId=r.MembershipId where Commited=0 and ClanId=?", clan_id)
+    kicked_rows = cur3.fetchall()
+    for kicked in kicked_rows:
+        kicked_count += 1
+        discord_id = kicked.DiscordID
+        membership_id = kicked.MembershipId
+        discord_member = discord_server.get_member(discord_id)
+        print("Kicking Membership: " + str(membership_id) + ", Discord Member: " + str(discord_member))
+
+        # REMOVE ALL ROLES FROM MEMBER
+        current_roles = fetch_roles(discord_member)
+        for role in current_roles:
+            if role in do_not_remove:
+                await client.say("Cannot remove role " + str(role))
+                continue
+            else:
+                await remove_roles(client, role, discord_member)
+                print("Removed " + str(role) + " from " + str(discord_member))
+
+        # ADD GUEST ROLE TO USER
+        r = discord.utils.get(discord_server.roles, name="Guest")
+        await client.add_roles(discord_member, r)
+
+        mssql.update(sql, "update StageRemoveClanMember set Commited=1 where MembershipId=?", membership_id)
+
+    embed = purge_results(clan_name, low_activity_count, kicked_count, frequenter_count, veteran_count, respected_count)
     await client.say(embed=embed)
 
 
-def purge_results(clan, low_activity_count, kicked_count):
-    embed = discord.Embed(title=str(clan) + " purge results:")
-    embed.add_field(name="Total Low Activity Members", value=str(low_activity_count))
-    embed.add_field(name="Total Kicked Members", value=str(kicked_count))
+async def remove_roles(client, role, clan_member):
+    discord_server = client.get_server(server_id)
+    role_to_remove = discord.utils.get(discord_server.roles, name=role)
+    await client.remove_roles(clan_member, role_to_remove)
+
+
+def purge_results(clan, low_activity_count, kicked_count, frequenter_count, veteran_count, respected_count):
+    embed = discord.Embed(title=str(clan) + " Purge Results:")
+    embed.add_field(name="Total Low Activity Members", value=str(low_activity_count), inline=False)
+    embed.add_field(name="Total Kicked Members", value=str(kicked_count), inline=False)
+    embed.add_field(name="Total Frequenter Promotions", value=str(frequenter_count), inline=False)
+    embed.add_field(name="Total Veteran Promotions", value=str(veteran_count), inline=False)
+    embed.add_field(name="Total Respected Promotions", value=str(respected_count), inline=False)
     return embed
 
 
@@ -122,8 +168,10 @@ def fetch_roles(member):
                 # if temp4 >= 1:
                     # roles_st = roles_st + ','
                 temp4 += 1
-            return roles_st[:-1]
+            return roles_st
         else:
             return 'NONE'
     except Exception as e:
         print(e)
+
+

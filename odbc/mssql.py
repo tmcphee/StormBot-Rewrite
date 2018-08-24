@@ -35,7 +35,6 @@ class mssql:
             conn.commit()
         except Exception as e:
             print(e)
-            conn.close()
             try:
                 conn = pyodbc.connect(
                     'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server_addr + ';DATABASE=' + database
@@ -54,7 +53,6 @@ class mssql:
             cursor.execute(query, *params)
             return cursor
         except Exception as e:
-            conn.close()
             try:
                 conn = pyodbc.connect(
                     'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server_addr + ';DATABASE=' + database + ';UID='

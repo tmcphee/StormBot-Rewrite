@@ -164,10 +164,11 @@ async def purge(ctx, clan):
     }
     clan_id = clan_ids.get(int(clan))
     cur = mssql.select(_sql, "select * from clans where ClanId = ?", clan_id)
-    for row in cur:
-        print(row.ClanName)
+    rows = cur.fetchall()
+    for row in rows:
+        print("Purging " + row.ClanName)
         await client.say("Purging " + str(row.ClanName))
-        await update_coco_roles(_sql, client, clan_id)
+        await update_coco_roles(_sql, client, clan_id, str(row.ClanName))
 
 
 @client.command(pass_conext=True)  # have this function run at least once a week to audit
