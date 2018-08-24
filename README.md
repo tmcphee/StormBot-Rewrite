@@ -12,6 +12,7 @@ Import class using:
 _sql = mssql()
 id = 123456
 cur = mssql.select(_sql, "select * from {tableName} where Id = ?", id)
-for row in cur:
+rows = cur.fetchall()
+for row in rows:
   # do something with the cursor
   ```
