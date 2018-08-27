@@ -112,19 +112,30 @@ client = Bot(command_prefix=BOT_PREFIX)
 
 
 @client.event
+async def on_voice_state_update(before, after):
+    await voip_tracker(_sql, before, after)
+
+
+@client.event
 async def on_message(message):
+    await message_tracker(_sql, client, message)
     # any on_message function should be placed before process_commands
     await client.process_commands(message)
 
 
 @client.event
 async def on_member_join(member):
-    await member_joined_discord(client, member)
+    await member_joined_discord(_sql, client, member)
 
 
 @client.event
 async def on_member_remove(member):
-    member_left_discord(client, member)
+    await member_left_discord(client, member)
+
+
+@client.event
+async def on_member_update(before, after):
+    await update_member(_sql, before, after)
 
 
 @client.event  # 0004
@@ -151,7 +162,22 @@ async def list_servers():
     except Exception as e:
         log_exception(str(e))
 
+        
+@client.event#0009
+async def display():
+    try:
+        await client.wait_until_ready()
+        while not client.is_closed:
+            await client.change_presence(game=Game(name="?help | V2.0 | BETA"))  #?help
+            await asyncio.sleep(25)
+            await client.change_presence(game=Game(name="ENV: " + str(server_env)))
+            await asyncio.sleep(5)
+            await client.change_presence(game=Game(name="DEV: ZombieEar | The Woj"))
+            await asyncio.sleep(2)
+    except Exception as e:
+        log_exception(str(e))
 
+        
 # Begin commands
 @client.command(pass_context=True)
 async def purge(ctx, clan):
@@ -186,5 +212,7 @@ async def users():
             print(str(role.name))
         print(str(member))
 
-
+        
+client.loop.create_task(list_servers())
+client.loop.create_task(display())
 client.run(TOKEN)
