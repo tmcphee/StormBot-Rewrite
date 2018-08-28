@@ -107,7 +107,7 @@ else:
     cursor2.execute("""INSERT INTO Fun VALUES (?,?)""", ('on', 'on'))
     connect.commit()
 
-BOT_PREFIX = "?"
+BOT_PREFIX = "!"
 client = Bot(command_prefix=BOT_PREFIX)
 
 
@@ -153,27 +153,24 @@ async def on_ready():
 async def list_servers():
     try:
         await client.wait_until_ready()
-        while not client.is_closed:
+        while not client.is_closed():
             print("********************************************Current*Servers*********************************************")
-            for server in client.servers:
-                print("     " + str(server.name) + " (Members: " + str(len(server.members)) + ") [" + str(server.id) + "]")
+            for guild in client.guilds:
+                print("     " + str(guild.name) + " (Members: " + str(len(guild.members)) + ") [" + str(guild.id) + "]")
             print("********************************************************************************************************")
             await asyncio.sleep(60*60)
     except Exception as e:
         log_exception(str(e))
 
-        
-@client.event#0009
+
 async def display():
     try:
         await client.wait_until_ready()
-        while not client.is_closed:
-            await client.change_presence(game=Game(name="?help | V2.0 | BETA"))  #?help
-            await asyncio.sleep(25)
-            await client.change_presence(game=Game(name="ENV: " + str(server_env)))
-            await asyncio.sleep(5)
-            await client.change_presence(game=Game(name="DEV: ZombieEar | The Woj"))
-            await asyncio.sleep(2)
+        while not client.is_closed():
+            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V2.0 | BETA"))
+            await asyncio.sleep(20)
+            await client.change_presence(activity=discord.Game("DEV: ZombieEar | The Woj"))
+            await asyncio.sleep(3)
     except Exception as e:
         log_exception(str(e))
 
@@ -215,4 +212,4 @@ async def users():
         
 client.loop.create_task(list_servers())
 client.loop.create_task(display())
-client.run(TOKEN)
+client.run(TOKEN, bot=True, reconnect=True)
