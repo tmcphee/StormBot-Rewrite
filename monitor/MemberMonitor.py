@@ -6,30 +6,36 @@ from odbc.mssql import *
 from coco.CocoFunctions import *
 
 
-async def voip_tracker(_sql, before, after):
+async def voip_tracker(_sql, member, before, after):
     blocked_voip = ['381910672256008196', '409383273182003211', '463518519556833280', '382125277066690562']
-    if str(after.voice.voice_channel.id) not in blocked_voip:
-        if before.voice.voice_channel is None and after.voice.voice_channel is not None:
+    if str(after.channel) == 'None':
+        return
+    if str(after.channel.id) not in blocked_voip:
+        curr_channel = str(after.channel)
+        before_channel = str(before.channel)
+        if after.channel is not None:
             start = int(time.time())
-            while before.voice.voice_channel is None and after.voice.voice_channel is not None:
+            while str(before.channel) == before_channel and str(after.channel) == curr_channel:
                 await asyncio.sleep(0.5)
             finish = int(time.time())
             duration = ((finish - start) / 60)
-            get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(after.id))
-            if len(get_user) == 0:
+            get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(member.id))
+            if get_user is 'None':
                 add_member_database(_sql, after)
-            get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ActivityDate = ?"
-                                        , str(after.id), datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d'))
-            if len(get_activity) == 0:
+            get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and "
+                                              "datediff(dd, ActivityDate, getdate()) = 0"
+                                        , str(member.id))
+            rows = get_activity.fetchall()
+            if rows == []:
                 mssql.update(_sql, "INSERT INTO DiscordActivity VALUES (?, ?, ?, ?, ?)",
-                             str(after.id), duration, 0, str(after.guild.id)
-                             , datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d'))
+                             str(member.id), int(duration), 0, str(member.guild.id)
+                             , datetime.datetime.now())
             else:
-                sql = "UPDATE DiscordActivity" \
-                      " SET Minutes_Voice = Minutes_Voice + ?" \
-                      " WHERE DiscordID = ? and ActivityDate = ?"
-                mssql.update(_sql, sql, duration, str(after.id)
-                             , datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d'))
+                query = "UPDATE DiscordActivity" \
+                        " SET Minutes_Voice = Minutes_Voice + ?" \
+                        " WHERE DiscordID = ? and datediff(dd, ActivityDate, getdate()) = 0"
+                mssql.update(_sql, query, duration, str(member.id))
+            return
 
 
 async def message_tracker(_sql, client, message):
@@ -39,28 +45,22 @@ async def message_tracker(_sql, client, message):
     mem = message.guild
     if message.author == client.user:  # do not want the bot to reply to itself
         return
-    print('here')
-    get_user = mssql.select("SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(sender.id))
-    print(str(get_user))
+    get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(sender.id))
     if get_user is 'None':
         add_member_database(_sql, sender)
-        print('here1')
-    get_activity = mssql.select("SELECT * FROM DiscordActivity WHERE DiscordID = ? and ActivityDate = ?"#problem starts here *****************
-                                , str(sender.id), datetime.datetime.now().date())
-    print(str(datetime.datetime.now().date()))
-    print(str(get_activity))
-    if str(get_activity) == 'None':
-        print('here2')
+    get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and "
+                                      "datediff(dd, ActivityDate, getdate()) = 0"
+                                , str(sender.id))
+    rows = get_activity.fetchall()
+    if rows == []:
         mssql.update(_sql, "INSERT INTO DiscordActivity VALUES (?, ?, ?, ?, ?)",
-                     str(sender.id), 0, 1, str(sender.guild.id)
-                     , datetime.datetime.now().date())
+                     str(sender.id), 0, 1, str(message.guild.id)
+                     , datetime.datetime.now())
     else:
-        print('here3')
-        sql = "UPDATE DiscordActivity" \
+        query = "UPDATE DiscordActivity" \
               " SET Messages_Sent = Messages_Sent + ?" \
-              " WHERE DiscordID = ? and ActivityDate = ?"
-        mssql.update(_sql, sql, 1, str(sender.id)
-                     , datetime.datetime.now().date())
+              " WHERE DiscordID = ? and datediff(dd, ActivityDate, getdate()) = 0"
+        mssql.update(_sql, query, 1, str(sender.id))
 
 
 async def member_joined_discord(client, member):

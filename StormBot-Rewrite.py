@@ -112,8 +112,8 @@ client = Bot(command_prefix=BOT_PREFIX)
 
 
 @client.event
-async def on_voice_state_update(before, after):
-    await voip_tracker(_sql, before, after)
+async def on_voice_state_update(member, before, after):
+    await voip_tracker(_sql, member, before, after)
 
 
 @client.event
