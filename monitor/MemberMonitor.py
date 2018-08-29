@@ -16,11 +16,11 @@ async def voip_tracker(_sql, before, after):
             finish = int(time.time())
             duration = ((finish - start) / 60)
             get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(after.id))
-            if len(get_user.fetchall()) == 0:
+            if len(get_user) == 0:
                 add_member_database(_sql, after)
             get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ActivityDate = ?"
                                         , str(after.id), datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d'))
-            if len(get_activity.fetchall()) == 0:
+            if len(get_activity) == 0:
                 mssql.update(_sql, "INSERT INTO DiscordActivity VALUES (?, ?, ?, ?, ?)",
                              str(after.id), duration, 0, str(after.guild.id)
                              , datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d'))
@@ -40,25 +40,27 @@ async def message_tracker(_sql, client, message):
     if message.author == client.user:  # do not want the bot to reply to itself
         return
     print('here')
-    get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(sender.id))
-    print(str(get_user.fetchall))
-    if len(get_user.fetchall) == 0:
+    get_user = mssql.select("SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(sender.id))
+    print(str(get_user))
+    if get_user is 'None':
         add_member_database(_sql, sender)
         print('here1')
-    get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ActivityDate = ?"
-                                , str(sender.id), int(datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d')))
-    if len(get_activity.fetchall()) == 0:
+    get_activity = mssql.select("SELECT * FROM DiscordActivity WHERE DiscordID = ? and ActivityDate = ?"#problem starts here *****************
+                                , str(sender.id), datetime.datetime.now().date())
+    print(str(datetime.datetime.now().date()))
+    print(str(get_activity))
+    if str(get_activity) == 'None':
         print('here2')
         mssql.update(_sql, "INSERT INTO DiscordActivity VALUES (?, ?, ?, ?, ?)",
                      str(sender.id), 0, 1, str(sender.guild.id)
-                     , datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d'))
+                     , datetime.datetime.now().date())
     else:
         print('here3')
         sql = "UPDATE DiscordActivity" \
               " SET Messages_Sent = Messages_Sent + ?" \
               " WHERE DiscordID = ? and ActivityDate = ?"
         mssql.update(_sql, sql, 1, str(sender.id)
-                     , datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d'))
+                     , datetime.datetime.now().date())
 
 
 async def member_joined_discord(client, member):
