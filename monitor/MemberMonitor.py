@@ -63,8 +63,8 @@ async def message_tracker(_sql, client, message):
         mssql.update(_sql, query, 1, str(sender.id))
 
 
-async def member_joined_discord(client, member):
-    add_member_database(member)
+async def member_joined_discord(_sql, client, member):
+    await add_member_database(_sql, member)
     embed = discord.Embed(title="Welcome to Collective Conscious.",
                           description="CoCo is a PC-only Destiny 2 clan covering both NA and EU.", color=0x008000)
     embed.add_field(name='1. Server nickname',
@@ -83,11 +83,11 @@ async def member_joined_discord(client, member):
                     'in #faq before asking questions, as you may find '
                     'them answered!', inline=False)
     embed.set_footer(text='I\'m a bot. If you have questions, please contact a Clan Leader, Admin, or Moderator!')
-    await client.send_message(member, embed=embed)
+    await member.send(embed=embed)
     print("-on_member_join      User Joined      User:" + str(member))
 
 
-async def member_left_discord(client, member):
+async def member_left_discord(_sql, client, member):
     print('')
 
 
@@ -96,7 +96,7 @@ async def update_member(_sql, before, after):
     retn = temp.fetchall()
     if before.nick != after.nick:
         if len(retn) == 0:
-            await add_member_database(after)
+            await add_member_database(_sql, after)
         else:
             query = """
                                UPDATE DiscordUsers
@@ -104,12 +104,12 @@ async def update_member(_sql, before, after):
                                WHERE DiscordID = ?
                             """
             data = (str(after.nick), str(after.id))
-            mssql.update(query, data)
+            mssql.update(_sql, query, data)
             print("-Updated the user: " + after.name + " changed Nickname from *" + str(before.nick) + "* to *"
                   + str(after.nick) + "*")
     if before.roles != after.roles:
         if len(retn) == 0:
-            add_member_database(after)
+            add_member_database(_sql, after)
         roles_arr = fetch_roles(after)
         temp = 0
         while temp < len(roles_arr):
@@ -133,7 +133,7 @@ async def update_member(_sql, before, after):
             temp2 += 1
     if str(before) != str(after):
         if len(retn) == 0:
-            await add_member_database(after)
+            await add_member_database(_sql, after)
         else:
 
             sql = """

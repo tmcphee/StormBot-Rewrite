@@ -15,6 +15,7 @@ from discord.ext.commands import Bot
 from odbc.mssql import *
 from coco.CocoFunctions import *
 from monitor.MemberMonitor import *
+from monitor.MessageBroadcast import *
 
 
 def setup_logging_to_file(filename):
@@ -107,7 +108,7 @@ else:
     cursor2.execute("""INSERT INTO Fun VALUES (?,?)""", ('on', 'on'))
     connect.commit()
 
-BOT_PREFIX = "!"
+BOT_PREFIX = "?"
 client = Bot(command_prefix=BOT_PREFIX)
 
 
@@ -120,7 +121,9 @@ async def on_voice_state_update(member, before, after):
 async def on_message(message):
     await message_tracker(_sql, client, message)
     # any on_message function should be placed before process_commands
-    await client.process_commands(message)
+    member = message.author
+    if member.guild_permissions.administrator:
+        await client.process_commands(message)
 
 
 @client.event
@@ -130,7 +133,7 @@ async def on_member_join(member):
 
 @client.event
 async def on_member_remove(member):
-    await member_left_discord(client, member)
+    await member_left_discord(_sql, client, member)
 
 
 @client.event
@@ -171,6 +174,8 @@ async def display():
             await asyncio.sleep(20)
             await client.change_presence(activity=discord.Game("DEV: ZombieEar | The Woj"))
             await asyncio.sleep(3)
+            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V2.0 | BETA"))
+            await asyncio.sleep(20)
     except Exception as e:
         log_exception(str(e))
 
@@ -209,7 +214,70 @@ async def users():
             print(str(role.name))
         print(str(member))
 
-        
+
+@client.command(pass_context=True)
+async def activity(ctx, message):
+    print('*' + str(message.content) + '*')
+    channel = message.channel
+    member = message.author
+    mod_ck = moderator_check(member, message.guild)
+    if (mod_ck is True) or member.guild_permissions.administrator:
+        if "<@" in message:
+            member_id = str(message[12:-1])
+            print('*' + str(member_id) + '*')
+            temp_con = str(message[12:-1])
+            if "!" in member_id:
+                member_id = temp_con[1:]
+                print('*' + str(member_id) + '*')
+        else:
+            member_id = str(message.author.id)
+        temp = mssql.select(_sql, "SELECT * FROM DiscordUsers Join DiscordActivity"
+                                  " ON (DiscordUsers.DiscordID = DiscordActivity.DiscordID)"
+                                  " WHERE datediff(dd, ActivityDate, getdate()) = 0"
+                                  " AND DiscordUsers.DiscordID = ?", member_id)
+        user_dat = temp.fetchall()
+        if str(user_dat) != '[]':
+            emb = (discord.Embed(title="Activity Request:", color=0x49ad3f))
+            emb.add_field(name='User', value=user_dat[0][1], inline=True)
+            emb.add_field(name='User ID', value=user_dat[0][2], inline=True)
+            emb.add_field(name='Nickname/BattleTag', value=user_dat[0][3], inline=True)
+            emb.add_field(name='Current Voice Activity', value=user_dat[0][8], inline=True)
+            emb.add_field(name='Current Message Activity', value=user_dat[0][9], inline=True)
+            emb.add_field(name='Previous 7-Day Activity', value=user_dat[0][5], inline=True)
+            emb.set_footer(text='Requested By: (' + str(message.author.id) + ') ' + str(message.author))
+            await channel.send(embed=emb)
+        else:
+            emb = (discord.Embed(title="Activity Request:", color=0x49ad3f))
+            emb.set_author(name="Stormbot")
+            emb.add_field(name='ERROR - BAD REQUEST',
+                          value='That Member don\'t exist. Either the Member is not in the database,'
+                                ' you fucked up, '
+                                'or the programmer fucked up.', inline=True)
+            emb.set_footer(text="If the member exists and the error is repeated please notify ZombieEar#0493 ")
+            await channel.send(embed=emb)
+    else:
+        await channel.send('Access Denied - You are not a Moderator or Administrator')
+
+
+
+def moderator_check(member, server):#check if user is in a Moderator
+    try:
+        result = False
+        mod = 'Moderator'
+        programmer = 'Collective Processors'
+
+        roles = fetch_roles(member)
+
+        if mod in roles:
+            result = True
+        if programmer in roles:
+            result = True
+        return result
+    except Exception as e:
+        log_exception(str(e))
+
+
 client.loop.create_task(list_servers())
 client.loop.create_task(display())
+client.loop.create_task(msg_broadcast(client))
 client.run(TOKEN, bot=True, reconnect=True)

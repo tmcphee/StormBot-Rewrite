@@ -1,19 +1,20 @@
 import discord
 import asyncio
 from random import randint
-from odbc.mssql import *
 
 
 async def msg_broadcast(client):
-    broadcast_list = ['384886471531692033', '162706186272112640']
+    broadcast_list = [384886471531692033, 162706186272112640]
     await client.wait_until_ready()
-    while not client.is_closed:
+    while not client.is_closed():
+        await asyncio.sleep(60 * 60)
         temp = 0
         while temp < len(broadcast_list):
-            ran_val = randint(0, 2)
+            channel = client.get_channel(broadcast_list[temp])
+            ran_val = randint(0, 3)
             if ran_val == 0:
                 embed = discord.Embed(title="Friendly Reminder (click me!)",
-                                      url="https://www.bungie.net/en/Forums/Post/248075442",
+                                      url="https://www.bungie.net/en/Forums/Post/248172496",
                                       description="If you want to help the community, then saying hi on our advert post, "
                                                   "and giving it a thumbs up really does make a big difference! (New one "
                                                   "made weekly). Big shoutout to everyone who commented and thumbs uped "
@@ -28,14 +29,16 @@ async def msg_broadcast(client):
                                                   "for each role (Veteran, Frequenter, Clan Member, Low Activity))")
             if ran_val == 2:
                 embed = discord.Embed(title="Friendly Reminder",
-                                      description="If you're going to be gone for a while (plz alert staff). "
-                                                  "The normal course of action is to give you 1 week freebie. Then "
-                                                  "to start demotions; to eventual kick (We get that life get's in "
-                                                  "the way (GET OUT OF MY WAY LIFE, I'VE HAD IT UP TO HERE WITH YOU!!). "
-                                                  "And, we want to show that, we understand mange. We get it, don't "
-                                                  "sweat it (sick rhymes tho?))")
-            await client.send_message(client.get_channel(broadcast_list[temp]), embed=embed)
+                                      description="If you are going to be gone for awhile or jsut stepping out for a "
+                                                  "few days please let a staff member know. If you let us know before "
+                                                  "hand you will be given 1 extra week before demotions start and "
+                                                  "eventually kick. We understand that life gets in the way and event "
+                                                  "come up, we are here to help you when those do happen. Please be "
+                                                  "sure to let a staff member know of your absense and no need to "
+                                                  "stress about it.")
+            if ran_val == 3:
+                embed = discord.Embed(title="Looking for raid help?",
+                                      description="Feel free to @Sherpa if you're looking to learn or improve on any "
+                                                  "of the raids!")
+            await channel.send(embed=embed)
             temp = temp + 1
-        #await client.send_message(client.get_channel('384886471531692033'), embed=embed)
-        #await client.send_message(client.get_channel('162706186272112640'), embed=embed)
-        await asyncio.sleep(60 * 60)
