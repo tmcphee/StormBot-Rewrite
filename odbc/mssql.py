@@ -1,6 +1,7 @@
 import pyodbc
 
 # CONFIG
+'''
 text_file = open("StormBot.config", "r")
 BOT_CONFIG = text_file.readlines()
 text_file.close()
@@ -63,4 +64,4 @@ class mssql:
                     'DRIVER={SQL SERVER};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
                     + password)
                 cursor = conn.cursor()
-            # self.select(query, *params)
+            # self.select(query, *params)'''

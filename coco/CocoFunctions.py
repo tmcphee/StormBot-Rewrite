@@ -5,6 +5,7 @@ import time
 
 
 # CONFIG
+'''
 config_file = open("StormBot.config", "r")
 storm_config = config_file.readlines()
 config_file.close()
@@ -172,6 +173,6 @@ def fetch_roles(member):
         else:
             return 'NONE'
     except Exception as e:
-        print(e)
+        print(e)'''
 
 

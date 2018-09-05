@@ -7,7 +7,7 @@ async def msg_broadcast(client):
     broadcast_list = [384886471531692033, 162706186272112640]
     await client.wait_until_ready()
     while not client.is_closed():
-        await asyncio.sleep(60 * 60)
+        #await asyncio.sleep(60 * 5)
         temp = 0
         while temp < len(broadcast_list):
             channel = client.get_channel(broadcast_list[temp])
@@ -42,3 +42,4 @@ async def msg_broadcast(client):
                                                   "of the raids!")
             await channel.send(embed=embed)
             temp = temp + 1
+        await asyncio.sleep(60 * 60)

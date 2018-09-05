@@ -12,10 +12,10 @@ import os
 from os import path
 from discord import Game
 from discord.ext.commands import Bot
-from odbc.mssql import *
 from coco.CocoFunctions import *
 from monitor.MemberMonitor import *
 from monitor.MessageBroadcast import *
+from db.insql import *
 
 
 def setup_logging_to_file(filename):
@@ -41,20 +41,21 @@ def log_exception(e):
             line=trace_back.tb_lineno))
 
 
-_sql = mssql()
-setup_logging_to_file('StormBot_log.txt')
+#_sql = mssql()
+setup_logging_to_file('StormBot.log')
 #CONFIG
 text_file = open("StormBot.config", "r")
 BOT_CONFIG = text_file.readlines()
 text_file.close()
 
-server_addr = str(BOT_CONFIG[0]).strip()
-database = str(BOT_CONFIG[1]).strip()
-username = str(BOT_CONFIG[2]).strip()
-password = str(BOT_CONFIG[3]).strip()
-TOKEN = str(BOT_CONFIG[4]).strip()
+#server_addr = str(BOT_CONFIG[0]).strip()
+#database = str(BOT_CONFIG[1]).strip()
+#username = str(BOT_CONFIG[2]).strip()
+#password = str(BOT_CONFIG[3]).strip()
+#TOKEN = str(BOT_CONFIG[4]).strip()
+TOKEN = str(BOT_CONFIG[0]).strip()
 server_startime = time.time()
-
+'''
 retry_flag = True
 retry_count = 0
 while retry_flag:
@@ -80,33 +81,7 @@ while retry_flag:
         time.sleep(2)
         if retry_count == 5:
             print('Connection to SQL server - Failed')
-            sys.exit(2)
-
-SQL = path.exists("pythonsqlite.db")  # Resumes or creates Database file
-if SQL is True:
-    print("SQL INTERNAL SERVER -- DATABASE RESUMING TO SAVED STATE")
-    connect = sqlite3.connect('pythonsqlite.db')
-    cursor2 = connect.cursor()
-else:
-    print("WARNING -- INTERNAL DATABASE FAILED TO RESUME TO SAVED STATE")
-    print("        -- SYSTEM CREATING DATABASE WITH NEW TABLE")
-    connect = sqlite3.connect('pythonsqlite.db')
-    cursor2 = connect.cursor()
-    cursor2.execute("""CREATE TABLE Presets
-                          (NoVoice integer , NoMessages integer, GuestRole text, ActiveRole text, InactiveRole text, 
-                          BeginDate text, StombotChannel text)
-                       """)
-    connect.commit()
-    cursor2.execute("""INSERT INTO Presets VALUES (?,?,?,?,?,?,?)""", (120, 10, "381911719901134850",
-                                                                       "[TEST]Discord Active", "[TEST]Discord Inactive",
-                                                                       '2018-08-05 20:59:08', '2018-08-05 20:59:08'))
-    connect.commit()
-    cursor2.execute("""CREATE TABLE Fun
-                              (joke text , insult text)
-                           """)
-    connect.commit()
-    cursor2.execute("""INSERT INTO Fun VALUES (?,?)""", ('on', 'on'))
-    connect.commit()
+            sys.exit(2)'''
 
 BOT_PREFIX = "?"
 client = Bot(command_prefix=BOT_PREFIX)
@@ -114,31 +89,30 @@ client = Bot(command_prefix=BOT_PREFIX)
 
 @client.event
 async def on_voice_state_update(member, before, after):
-    await voip_tracker(_sql, member, before, after)
+    await voip_tracker(member, before, after)
 
 
 @client.event
 async def on_message(message):
-    await message_tracker(_sql, client, message)
+    await message_tracker(client, message)
     # any on_message function should be placed before process_commands
     member = message.author
     if member.guild_permissions.administrator:
         await client.process_commands(message)
 
-
 @client.event
 async def on_member_join(member):
-    await member_joined_discord(_sql, client, member)
+    await member_joined_discord(client, member)
 
 
 @client.event
 async def on_member_remove(member):
-    await member_left_discord(_sql, client, member)
+    await member_left_discord(client, member)
 
 
 @client.event
 async def on_member_update(before, after):
-    await update_member(_sql, before, after)
+    await update_member(after, before, after)
 
 
 @client.event  # 0004
