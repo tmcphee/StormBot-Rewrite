@@ -2,8 +2,12 @@ import json
 import requests
 import asyncio
 from coco.CocoFunctions import *
+
+text_file = open("StormBot.config", "r")
+BOT_CONFIG = text_file.readlines()
+text_file.close()
 headers = {}
-headers['Api-Key'] = '4C7B8C83-8247-4B05-B226-6EB29B7F78B9'
+headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
 
 
 async def voip_tracker(member, before, after):
@@ -34,12 +38,12 @@ async def voip_tracker(member, before, after):
             if get_activity == []:
                 s.get(
                     'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-                    '/InsertActivity/' + str(1) + '/' + str(duration) + ''
+                    '/InsertActivity/' + str(1) + '/' + str(int(duration)) + ''
                     , headers=headers)
             else:
                 s.get(
                     'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-                    '/UpdateActivity/' + str(1) + '/' + str(duration) + ''
+                    '/UpdateActivity/' + str(1) + '/' + str(int(duration)) + ''
                     , headers=headers)
             return
 

@@ -48,12 +48,9 @@ text_file = open("StormBot.config", "r")
 BOT_CONFIG = text_file.readlines()
 text_file.close()
 
-#server_addr = str(BOT_CONFIG[0]).strip()
-#database = str(BOT_CONFIG[1]).strip()
-#username = str(BOT_CONFIG[2]).strip()
-#password = str(BOT_CONFIG[3]).strip()
-#TOKEN = str(BOT_CONFIG[4]).strip()
 TOKEN = str(BOT_CONFIG[0]).strip()
+headers = {}
+headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
 server_startime = time.time()
 '''
 retry_flag = True
@@ -153,7 +150,7 @@ async def display():
     except Exception as e:
         log_exception(str(e))
 
-        
+''' 
 # Begin commands
 @client.command(pass_context=True)
 async def purge(ctx, clan):
@@ -187,7 +184,44 @@ async def users():
                          str(role.id), str(member.id), str(role.id))
             print(str(role.name))
         print(str(member))
+'''
 
+
+@client.command(pass_context=True)
+async def activity(ctx):
+    channel = ctx.channel
+    message = ctx.message
+    content = message.content
+    member = ctx.message.author
+    mod_ck = moderator_check(member)
+    if (mod_ck is True) or member.guild_permissions.administrator:
+        s = requests.Session()
+        if "<@" in content:
+            member_id = str(content[12:-1])
+            temp_con = str(content[12:-1])
+            if "!" in member_id:
+                member_id = temp_con[1:]
+
+            req1 = s.get(
+                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member_id) + '/Activity/Today'
+                , headers=headers)
+            user_dat = json.loads(req1.text)
+            req2 = s.get(
+                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member_id) + ''
+                , headers=headers)
+            get_user = json.loads(req2.text)
+
+            emb = (discord.Embed(title="Activity Request: (" + user_dat[0]['activityDate'] + ")", color=0x49ad3f))
+            emb.add_field(name='User', value=get_user[0]['userName'], inline=True)
+            emb.add_field(name='User ID', value=user_dat[0]['discordId'], inline=True)
+            emb.add_field(name='Nickname/BattleTag', value=get_user[0]['nickName'], inline=True)
+            emb.add_field(name='Current Voice Activity', value=user_dat[0]['minutesVoice'], inline=True)
+            emb.add_field(name='Current Message Activity', value=user_dat[0]['messagesSent'], inline=True)
+            emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+            await channel.send(embed=emb)
+    else:
+        await channel.send('Access Denied - You are not a Moderator or Administrator')
+'''
 
 @client.command(pass_context=True)
 async def activity(ctx, message):
@@ -231,10 +265,24 @@ async def activity(ctx, message):
             await channel.send(embed=emb)
     else:
         await channel.send('Access Denied - You are not a Moderator or Administrator')
+'''
 
+def fetch_roles(member):
+    roles_list_ob = member.roles
+    roles_len = len(roles_list_ob)
+    if roles_len != 0:
+        temp4 = 1
+        roles_st = ''
+        while temp4 < roles_len:
+            roles_st = roles_st + roles_list_ob[temp4].name
+            if temp4 >= 1:
+                roles_st = roles_st + ','
+            temp4 = temp4 + 1
+        return roles_st[:-1]
+    else:
+        return 'NONE'
 
-
-def moderator_check(member, server):#check if user is in a Moderator
+def moderator_check(member):#check if user is in a Moderator
     try:
         result = False
         mod = 'Moderator'
@@ -253,5 +301,5 @@ def moderator_check(member, server):#check if user is in a Moderator
 
 client.loop.create_task(list_servers())
 client.loop.create_task(display())
-client.loop.create_task(msg_broadcast(client))
+#client.loop.create_task(msg_broadcast(client))
 client.run(TOKEN, bot=True, reconnect=True)
