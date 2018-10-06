@@ -273,5 +273,5 @@ def moderator_check(member):#check if user is in a Moderator
 
 client.loop.create_task(list_servers())
 client.loop.create_task(display())
-#client.loop.create_task(msg_broadcast(client))
+client.loop.create_task(msg_broadcast(client))
 client.run(TOKEN, bot=True, reconnect=True)
