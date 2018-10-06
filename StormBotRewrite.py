@@ -1,21 +1,11 @@
-import asyncio
-import time
 import datetime
-import pyodbc
-import discord
-import sqlite3
 import sys
 import traceback
 import logging
-import requests
-import os
-from os import path
-from discord import Game
 from discord.ext.commands import Bot
-from coco.CocoFunctions import *
 from monitor.MemberMonitor import *
 from monitor.MessageBroadcast import *
-from db.insql import *
+systemstart = int(time.time())
 
 
 def setup_logging_to_file(filename):
@@ -52,33 +42,6 @@ TOKEN = str(BOT_CONFIG[0]).strip()
 headers = {}
 headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
 server_startime = time.time()
-'''
-retry_flag = True
-retry_count = 0
-while retry_flag:
-    try:
-        try:
-            conn = pyodbc.connect(
-                'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server_addr + ';DATABASE=' + database
-                + ';UID=' + username + ';PWD=' + password)
-            cursor = conn.cursor()
-            server_env = 'Linux'
-        except:
-            conn = pyodbc.connect(
-                'DRIVER={SQL SERVER};SERVER=' + server_addr + ';DATABASE=' + database + ';UID=' + username + ';PWD='
-                + password)
-            cursor = conn.cursor()
-            server_env = 'Windows'
-        retry_flag = False
-        print('Connection to SQL server - Succeeded')
-        print('Bot running in ' + str(server_env) + ' environment')
-    except Exception as e:
-        log_exception(str(e))
-        retry_count = retry_count + 1
-        time.sleep(2)
-        if retry_count == 5:
-            print('Connection to SQL server - Failed')
-            sys.exit(2)'''
 
 BOT_PREFIX = "?"
 client = Bot(command_prefix=BOT_PREFIX)
@@ -203,69 +166,77 @@ async def activity(ctx):
                 member_id = temp_con[1:]
 
             req1 = s.get(
-                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member_id) + '/Activity/Today'
+                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member_id) + '/Activity'
                 , headers=headers)
             user_dat = json.loads(req1.text)
-            req2 = s.get(
-                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member_id) + ''
-                , headers=headers)
-            get_user = json.loads(req2.text)
 
-            emb = (discord.Embed(title="Activity Request: (" + user_dat[0]['activityDate'] + ")", color=0x49ad3f))
-            emb.add_field(name='User', value=get_user[0]['userName'], inline=True)
+            emb = (discord.Embed(title="Activity Request:", color=0x49ad3f))
+            emb.add_field(name='User', value=user_dat[0]['userName'], inline=True)
             emb.add_field(name='User ID', value=user_dat[0]['discordId'], inline=True)
-            emb.add_field(name='Nickname/BattleTag', value=get_user[0]['nickName'], inline=True)
-            emb.add_field(name='Current Voice Activity', value=user_dat[0]['minutesVoice'], inline=True)
-            emb.add_field(name='Current Message Activity', value=user_dat[0]['messagesSent'], inline=True)
+            emb.add_field(name='Nickname/BattleTag', value=user_dat[0]['nickName'], inline=True)
+            emb.add_field(name='Current Voice Activity', value=user_dat[0]['voip'], inline=True)
+            emb.add_field(name='Current Message Activity', value=user_dat[0]['totalMessage'], inline=True)
             emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
             await channel.send(embed=emb)
     else:
         await channel.send('Access Denied - You are not a Moderator or Administrator')
-'''
+
 
 @client.command(pass_context=True)
-async def activity(ctx, message):
-    print('*' + str(message.content) + '*')
-    channel = message.channel
-    member = message.author
-    mod_ck = moderator_check(member, message.guild)
+async def activitys(ctx):
+    channel = ctx.channel
+    message = ctx.message
+    content = message.content
+    member = ctx.message.author
+    contents = content.split()
+
+    mod_ck = moderator_check(member)
     if (mod_ck is True) or member.guild_permissions.administrator:
-        if "<@" in message:
-            member_id = str(message[12:-1])
-            print('*' + str(member_id) + '*')
-            temp_con = str(message[12:-1])
+        startdate = str(contents[2]).split('-')
+        datetimestart = datetime.datetime.now().replace(month=int(startdate[0]), day=int(startdate[1]),
+                                                        year=(2000 + int(startdate[2])), hour=0, minute=0,
+                                                        second=0)
+        enddate = str(contents[3]).split('-')
+        datetimeend = datetime.datetime.now().replace(month=int(enddate[0]), day=int(enddate[1]),
+                                                      year=int(2000 + int(enddate[2])), hour=23, minute=59,
+                                                      second=59)
+        s = requests.Session()
+        if "<@" in content:
+            member_id = str(contents[1][2:-1])
             if "!" in member_id:
-                member_id = temp_con[1:]
-                print('*' + str(member_id) + '*')
-        else:
-            member_id = str(message.author.id)
-        temp = mssql.select(_sql, "SELECT * FROM DiscordUsers Join DiscordActivity"
-                                  " ON (DiscordUsers.DiscordID = DiscordActivity.DiscordID)"
-                                  " WHERE datediff(dd, ActivityDate, getdate()) = 0"
-                                  " AND DiscordUsers.DiscordID = ?", member_id)
-        user_dat = temp.fetchall()
-        if str(user_dat) != '[]':
+                member_id = member_id[1:]
+
+            req1 = s.get(
+                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member_id) + '/Activity/'
+                + str(datetimestart) + "/" + str(datetimeend), headers=headers)
+            user_dat = json.loads(req1.text)
+
             emb = (discord.Embed(title="Activity Request:", color=0x49ad3f))
-            emb.add_field(name='User', value=user_dat[0][1], inline=True)
-            emb.add_field(name='User ID', value=user_dat[0][2], inline=True)
-            emb.add_field(name='Nickname/BattleTag', value=user_dat[0][3], inline=True)
-            emb.add_field(name='Current Voice Activity', value=user_dat[0][8], inline=True)
-            emb.add_field(name='Current Message Activity', value=user_dat[0][9], inline=True)
-            emb.add_field(name='Previous 7-Day Activity', value=user_dat[0][5], inline=True)
-            emb.set_footer(text='Requested By: (' + str(message.author.id) + ') ' + str(message.author))
-            await channel.send(embed=emb)
-        else:
-            emb = (discord.Embed(title="Activity Request:", color=0x49ad3f))
-            emb.set_author(name="Stormbot")
-            emb.add_field(name='ERROR - BAD REQUEST',
-                          value='That Member don\'t exist. Either the Member is not in the database,'
-                                ' you fucked up, '
-                                'or the programmer fucked up.', inline=True)
-            emb.set_footer(text="If the member exists and the error is repeated please notify ZombieEar#0493 ")
+            emb.add_field(name='User', value=user_dat[0]['userName'], inline=True)
+            emb.add_field(name='User ID', value=user_dat[0]['discordId'], inline=True)
+            emb.add_field(name='Nickname/BattleTag', value=user_dat[0]['nickName'], inline=True)
+            emb.add_field(name='Current Voice Activity', value=user_dat[0]['voip'], inline=True)
+            emb.add_field(name='Current Message Activity', value=user_dat[0]['totalMessage'], inline=True)
+            emb.add_field(name='Start Date', value=user_dat[0]['startDate'], inline=True)
+            emb.add_field(name='End Date', value=user_dat[0]['endDate'], inline=True)
+            emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
             await channel.send(embed=emb)
     else:
         await channel.send('Access Denied - You are not a Moderator or Administrator')
-'''
+
+
+@client.command(pass_context=True)
+async def status(ctx):
+    channel = ctx.channel
+    member = ctx.message.author
+    mod_ck = moderator_check(member)
+    if (mod_ck is True) or member.guild_permissions.administrator:
+        duration = int(time.time()) - systemstart
+        dhours = (duration / 3600)
+        emb = (discord.Embed(title="StormBot Status:", color=0xdc8545))
+        emb.add_field(name='Uptime: ', value=(str(round(dhours, 2)) + "hrs"), inline=True)
+        await channel.send(embed=emb)
+
 
 def fetch_roles(member):
     roles_list_ob = member.roles
@@ -281,6 +252,7 @@ def fetch_roles(member):
         return roles_st[:-1]
     else:
         return 'NONE'
+
 
 def moderator_check(member):#check if user is in a Moderator
     try:
