@@ -3,13 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="ecf59352-e6a0-4dfe-a8c9-cc41635bebb8" name="Default" comment="Init">
       <change afterPath="$PROJECT_DIR$/db/internalsqlite.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/StormBot-Rewrite.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/StormBot-Rewrite.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StormBotRewrite.py" beforeDir="false" afterPath="$PROJECT_DIR$/StormBotRewrite.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor/MemberMonitor.py" beforeDir="false" afterPath="$PROJECT_DIR$/monitor/MemberMonitor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/monitor/MessageBroadcast.py" beforeDir="false" afterPath="$PROJECT_DIR$/monitor/MessageBroadcast.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -20,16 +14,37 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/StormBot_Rewrite$StormBotRewrite.coverage" NAME="StormBotRewrite Coverage Results" MODIFIED="1539217070842" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/StormBot_Rewrite$StormBotRewrite.coverage" NAME="StormBotRewrite Coverage Results" MODIFIED="1539926141717" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/StormBot_Rewrite$StormBot_Rewrite.coverage" NAME="StormBot-Rewrite Coverage Results" MODIFIED="1534784126276" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="StormBotRewrite.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="StormBot-Instance (EXAMPLE - DONT OVERWRITE).py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/instance/StormBot-Instance (EXAMPLE - DONT OVERWRITE).py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="408">
+              <caret line="24" column="19" selection-start-line="24" selection-start-column="19" selection-end-line="24" selection-end-column="19" />
+              <folding>
+                <element signature="e#0#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="StormBot-Instance-test.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/instance/StormBot-Instance-test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="340">
+              <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="StormBotRewrite.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/StormBotRewrite.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4369">
-              <caret line="272" column="31" selection-start-line="272" selection-start-column="31" selection-end-line="272" selection-end-column="31" />
+            <state relative-caret-position="221">
+              <caret line="241" lean-forward="true" selection-start-line="241" selection-end-line="241" selection-end-column="34" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -55,6 +70,8 @@
         <option value="$PROJECT_DIR$/SQL.py" />
         <option value="$PROJECT_DIR$/StormBot-Rewrite.py" />
         <option value="$PROJECT_DIR$/StormBotRewrite.py" />
+        <option value="$PROJECT_DIR$/instance/main.py" />
+        <option value="$PROJECT_DIR$/instance/StormBot-Instance-test.py" />
       </list>
     </option>
   </component>
@@ -87,6 +104,21 @@
               <item name="StormBot-Rewrite" type="b2602c69:ProjectViewProjectNode" />
               <item name="StormBot-Rewrite" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="StormBot-Rewrite" type="b2602c69:ProjectViewProjectNode" />
+              <item name="StormBot-Rewrite" type="462c0819:PsiDirectoryNode" />
+              <item name="db" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="StormBot-Rewrite" type="b2602c69:ProjectViewProjectNode" />
+              <item name="StormBot-Rewrite" type="462c0819:PsiDirectoryNode" />
+              <item name="instance" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="StormBot-Rewrite" type="b2602c69:ProjectViewProjectNode" />
+              <item name="StormBot-Rewrite" type="462c0819:PsiDirectoryNode" />
+              <item name="odbc" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -99,6 +131,11 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\T\PycharmProjects\StormBot-Rewrite\instance" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -180,7 +217,14 @@
       <option name="project" value="LOCAL" />
       <updated>1534735632222</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Bug fixes">
+      <created>1539923082555</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1539923082556</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -197,6 +241,7 @@
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.28091684" />
       <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
+      <window_info anchor="bottom" id="Find" order="1" visible="true" weight="0.32897604" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -207,7 +252,6 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -218,7 +262,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Init" />
-    <option name="LAST_COMMIT_MESSAGE" value="Init" />
+    <MESSAGE value="Bug fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bug fixes" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/StormBotRewrite.py">
@@ -258,12 +303,83 @@
     <entry file="file://$PROJECT_DIR$/StormBot-Rewrite.py" />
     <entry file="file://$PROJECT_DIR$/SQL.py" />
     <entry file="file://$PROJECT_DIR$/StormBot-Rewrite.py" />
+    <entry file="file://$PROJECT_DIR$/monitor/MemberMonitor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monitor/MessageBroadcast.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-99">
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/odbc/mssql.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-14" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/odbc/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/db/insql.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="33" lean-forward="true" selection-start-line="4" selection-end-line="4" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/StormBotRewrite.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4369">
-          <caret line="272" column="31" selection-start-line="272" selection-start-column="31" selection-end-line="272" selection-end-column="31" />
+        <state relative-caret-position="221">
+          <caret line="241" lean-forward="true" selection-start-line="241" selection-end-line="241" selection-end-column="34" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" column="17" lean-forward="true" selection-start-line="6" selection-start-column="17" selection-end-line="6" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/instance/StormBot-Instance-test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/instance/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" column="46" lean-forward="true" selection-start-line="8" selection-start-column="46" selection-end-line="8" selection-end-column="46" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/instance/StormBot-Instance (EXAMPLE - DONT OVERWRITE).py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="24" column="19" selection-start-line="24" selection-start-column="19" selection-end-line="24" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
