@@ -9,44 +9,6 @@ text_file.close()
 headers = {}
 headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
 
-'''
-async def voip_tracker(member, before, after):
-    blocked_voip = ['381910672256008196', '409383273182003211', '463518519556833280', '382125277066690562']
-    if str(after.channel) == 'None':
-        return
-    if str(after.channel.id) not in blocked_voip:
-        curr_channel = str(after.channel)
-        before_channel = str(before.channel)
-        if after.channel is not None:
-            start = int(time.time())
-            while str(before.channel) == before_channel and str(after.channel) == curr_channel:
-                await asyncio.sleep(0.5)
-            finish = int(time.time())
-            duration = ((finish - start) / 60)
-            s = requests.Session()
-            req1 = s.get(
-                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) + ''
-                , headers=headers)
-            get_user = json.loads(req1.text)
-            if get_user is []:
-                add_member_database(after)
-            req2 = s.get(
-                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-                '/Activity/Today'
-                , headers=headers)
-            get_activity = json.loads(req2.text)
-            if get_activity == []:
-                s.get(
-                    'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-                    '/InsertActivity/' + str(1) + '/' + str(int(duration)) + ''
-                    , headers=headers)
-            else:
-                s.get(
-                    'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-                    '/UpdateActivity/' + str(1) + '/' + str(int(duration)) + ''
-                    , headers=headers)
-            return'''
-
 
 async def voip_tracker(member, before, after):
     blocked_voip = [381910672256008196, 409383273182003211, 463518519556833280, 382125277066690562, 472090658870394880]
@@ -61,7 +23,6 @@ async def voip_tracker(member, before, after):
             start = int(time.time())
             while str(before.channel) != str(after.channel):
                 if after.channel.id in blocked_voip or str(before.channel) != tempb or str(after.channel) != tempa:
-                    print('EXIT')
                     break
                 await asyncio.sleep(1)
             duration = ((int(time.time()) - start) / 60)
@@ -92,7 +53,7 @@ async def voip_tracker(member, before, after):
 async def message_tracker(client, message):
     blocked_channels = ['162706186272112640']
     server = message.guild
-    sender = server.get_member(message.author.id)
+    sender = message.author
     if message.author == client.user:  # do not want the bot to reply to itself
         return
     s = requests.Session()
@@ -121,7 +82,7 @@ async def member_joined_discord(client, member):
                           description="CoCo is a PC-only Destiny 2 clan covering both NA and EU.", color=0x008000)
     embed.add_field(name='1. Server nickname',
                     value='Your nickname must match your BattleTag regardless of clan member status.\n'
-                          'Example: PeachTree#11671\n Set your nickname using the command \'?change_nick BattleTag\'.',
+                          'Example: PeachTree#11671',
                     inline=False)
     embed.add_field(name='2. Clan Applications',
                     value='Head to the #clan-application channel and apply to one of '

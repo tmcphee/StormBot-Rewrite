@@ -40,7 +40,8 @@ text_file.close()
 
 TOKEN = str(BOT_CONFIG[0]).strip()
 headers = {}
-headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
+APIKEY = str(BOT_CONFIG[1]).strip()
+headers['Api-Key'] = APIKEY
 server_startime = time.time()
 
 BOT_PREFIX = "?"
@@ -57,8 +58,7 @@ async def on_message(message):
     await message_tracker(client, message)
     # any on_message function should be placed before process_commands
     member = message.author
-    if member.guild_permissions.administrator:
-        await client.process_commands(message)
+    await client.process_commands(message)
 
 @client.event
 async def on_member_join(member):
@@ -236,6 +236,78 @@ async def status(ctx):
         emb = (discord.Embed(title="StormBot Status:", color=0xdc8545))
         emb.add_field(name='Uptime: ', value=(str(round(dhours, 2)) + "hrs"), inline=True)
         await channel.send(embed=emb)
+
+
+@client.command(pass_context=True)
+async def test(ctx):
+    member = ctx.message.author
+    print(str(fetch_roles(member)))
+
+'''
+@client.command(pass_context=True)
+async def change_nick(ctx):
+    print('y')
+    channel = ctx.channel
+    message = ctx.message
+    content = message.content.split()
+    member = ctx.message.author
+    print(str(content))
+    if len(content) != 2:
+        print('exit')
+        await channel.send('The argument entered is incorrect \n'
+                           'Try \'?change_nick BattleTag\'')
+        return
+    print('begin')
+    await member.edit(nick='test')
+    print('test')
+    await channel.send('<@' + str(message.id) + '> Your Nickname has been updated to \'' + content[1] + '\'')
+'''
+
+@client.command(pass_context=True)
+async def announcement(ctx):
+    broadcast_list = [384886471531692033, 162706186272112640]
+    #broadcast_list = [472466501883002891, 498694144403701760]#Test Server
+    channel = ctx.channel
+    message = ctx.message
+    content = message.content.split()
+    contentall = message.content
+    member = ctx.message.author
+    if moderator_check(member) or member.guild_permissions.administrator:
+        if len(content) < 3:
+            await channel.send('A tilte and message is required to have an announcement.'
+                               ' Try \'?announcement Title Message\'')
+            return
+        remove = (len(content[0]) + len(content[1]) + 2)
+        broadcast = contentall[remove:]
+        temp = 0
+        embed = discord.Embed(title=(content[1] + '    (PREVIEW)'),
+                              description=broadcast, color=0x39b8e8)
+        embed.set_footer(text='CoCo Clan Team   (' + str(member.id) + ')')
+        await channel.send(embed=embed)
+        await channel.send('This is a preview of the announcement.'
+                           ' Type \'send\' to proceed or type \'cancel\' to discard. You have 40 seconds to respond!')
+
+        def check(m):
+            if m.content == 'send' and m.channel == channel:
+                return m.content == 'send' and m.channel == channel
+            if m.content == 'cancel' and m.channel == channel:
+                return m.content == 'cancel' and m.channel == channel
+
+        try:
+            msg = await client.wait_for('message', check=check, timeout=40)
+            if msg.content == 'cancel':
+                await channel.send('<@' + str(member.id) + '> Message discarded')
+            else:
+                await channel.send('<@' + str(member.id) + '> Message sent')
+                emb = discord.Embed(title=(content[1]),
+                                      description=broadcast, color=0x39b8e8)
+                emb.set_footer(text='CoCo Clan Team   (' + str(member.id) + ')')
+                while temp < len(broadcast_list):
+                    announce = client.get_channel(broadcast_list[temp])
+                    await announce.send(embed=emb)
+                    temp = temp + 1
+        except asyncio.TimeoutError:
+            await channel.send('<@' + str(member.id) + '> Command Timeout. Message Discarded')
 
 
 def fetch_roles(member):
