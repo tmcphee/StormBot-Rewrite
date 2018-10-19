@@ -5,6 +5,7 @@ import logging
 from discord.ext.commands import Bot
 from monitor.MemberMonitor import *
 from monitor.MessageBroadcast import *
+from instance.main import *
 systemstart = int(time.time())
 
 
@@ -241,7 +242,8 @@ async def status(ctx):
 @client.command(pass_context=True)
 async def test(ctx):
     member = ctx.message.author
-    print(str(fetch_roles(member)))
+    if member.guild_permissions.administrator:
+        launch_instance('StormBot-Instance-test.py', TOKEN, APIKEY)
 
 '''
 @client.command(pass_context=True)
