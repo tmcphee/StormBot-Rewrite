@@ -119,30 +119,21 @@ async def update_member(member, before, after):
                   , headers=headers)
             print("-Updated the user: " + str(after.name) + " changed Nickname from *" + str(before.nick) + "* to *"
                   + str(after.nick) + "*")
-    '''if before.roles != after.roles:
-        if len(retn) == 0:
-            add_member_database(after)
-        roles_arr = fetch_roles(after)
-        temp = 0
-        while temp < len(roles_arr):
-            mssql.update(_sql, "if not exists(select * from DiscordRoles_Users where DiscordID=? and RoleId=?) "
-                               "begin insert into DiscordRoles_Users(DiscordID,RoleId) values(?,?) end", str(after.id),
-                         str(roles_arr[temp].id), str(after.id), str(roles_arr[temp].id))
-            temp += 1
-        sel = mssql.select(_sql, "SELECT * FROM DiscordRoles_Users WHERE DiscordID = ?", str(after.id))
-        retn2 = sel.fetchall()
-        temp2 = 0
-        temp3 = 0
-        while temp2 < len(retn2):
-            while temp3 < len(roles_arr):
-                if retn2[temp2][1] != roles_arr[temp3].id:
-                    mssql.update(_sql, "Update DiscordRoles_Users"
-                                       " SET GCRecord = ?"
-                                       " Where DiscordID=? and RoleId=?) "
-                                 , int(datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d')), str(after.id)
-                                 , str(roles_arr[temp3].id))
-                temp3 += 1
-            temp2 += 1'''
+
+    # UPDATE ROLES
+    new_roles = ""
+    if before.roles != after.roles:
+        for role in before.roles:
+            gc_roles_url = "https://cococlan.report/api/Discord/" + str(member.guild.id) + "/User/" \
+                           + str(after.id) + "/Roles/" + str(role.id) + "/Update"
+            s.get(gc_roles_url, headers=headers)
+        for role in after.roles:
+            new_roles += role.name + ", "
+            ins_roles_url = "https://cococlan.report/api/Discord/" + str(member.guild.id) + "/User/" \
+                            + str(after.id) + "/Roles/" + str(role.id) + "/Add"
+            s.get(ins_roles_url, headers=headers)
+        print("Update roles for " + str(member) + "to " + new_roles)
+
     if str(before) != str(after):
         if get_user == []:
             await add_member_database(after)

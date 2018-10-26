@@ -4,7 +4,7 @@ import time
 import datetime
 from random import randint
 from random import seed
-TOTAL_BROADCASTS = 6    # length
+TOTAL_BROADCASTS = 7    # length
 
 
 async def msg_broadcast(client):
@@ -68,6 +68,12 @@ async def msg_broadcast(client):
                                                       " Clan community. ZombieEar is currently seeking someone with"
                                                       " python knowledge to help improve StormBot. If this interests"
                                                       " you please DM @ZombieEar")
+                if ran_val == 7:
+                    embed = discord.Embed(title="Recruiting Web Developer",
+                                          description="Are you a web developer and looking to help improve the CoCo"
+                                                      " Clan community? Woj is currently seeking someone with"
+                                                      " knowledge of css and html to help create CoCo's first clan" 
+                                                      " website. If this interests you please DM @dasWoj#1113")
                 await channel.send(embed=embed)
                 temp = temp + 1
             await asyncio.sleep(60)
