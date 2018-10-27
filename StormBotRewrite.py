@@ -345,6 +345,66 @@ def moderator_check(member):#check if user is in a Moderator
         log_exception(str(e))
 
 
+def check_clan(member):
+    roles = fetch_roles(member)
+    clan_found = False
+    for i in range(20):  # i'm projecting here
+        if ('Clan ' + str(i)) in roles:
+            clan_found = True
+            clan_num = i
+            break
+    if not clan_found:
+        clan_num = 0  # default 'error' value
+    return clan_num
+
+
+@client.command(pass_context=True)
+async def staff(ctx):
+    channel = ctx.channel
+    author = ctx.message.author
+    server = ctx.guild
+
+    clan_num = check_clan(author)
+    clan_string = 'Clan ' + str(clan_num)
+
+    headmod_found = False
+    mod_found = False
+    lead_found = False
+
+    hmods = []
+    mods = []
+    for member in server.members:
+        roles = fetch_roles(member)
+        roles_list = member.roles  # to allow for equating directly, otherwise moderator and head mods get mixed
+        if clan_string in roles:
+            for role in roles_list:
+                if 'Head Moderator' == role.name:
+                    headmod_found = True
+                    hmods.append(member.mention)
+                if 'Moderator' == role.name:
+                    mod_found = True
+                    mods.append(member.mention)
+                if 'Leader' == role.name:
+                    lead_found = True
+                    lead = member.mention
+
+    if not headmod_found:
+        hmods = 'NIL'
+    if not mod_found:
+        mods = 'NIL'
+    if not lead_found:
+        lead = 'NIL'
+
+    emb = (discord.Embed(title="Collective Conscious " + clan_string + " Staff",
+                         description="These are your " + clan_string + " staff. Head Moderators and Admins can help with"
+                                                                       " joining the clan. Moderators can help with any other inquiries.",
+                         color=0x49ad3f))
+    emb.add_field(name='Leader', value=lead, inline=True)
+    emb.add_field(name='Head Moderator', value=', '.join(hmods), inline=True)
+    emb.add_field(name='Moderator', value=', '.join(mods), inline=True)
+    await channel.send(embed=emb)
+
+
 client.loop.create_task(list_servers())
 client.loop.create_task(display())
 client.loop.create_task(msg_broadcast(client))
