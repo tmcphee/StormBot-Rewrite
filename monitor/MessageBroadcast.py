@@ -4,7 +4,7 @@ import time
 import datetime
 from random import randint
 from random import seed
-TOTAL_BROADCASTS = 7    # length
+TOTAL_BROADCASTS = 6    # length
 
 
 async def msg_broadcast(client):
@@ -62,13 +62,13 @@ async def msg_broadcast(client):
                     embed = discord.Embed(title="Friendly Reminder",
                                           description="Please remember to change your discord server name,"
                                                       " it's a requirement of the discord!")
+                # if ran_val == 6:
+                #     embed = discord.Embed(title="Recruiting Python Programmer",
+                #                           description="Are you a programmer and looking to help improve the CoCo"
+                #                                       " Clan community. ZombieEar is currently seeking someone with"
+                #                                       " python knowledge to help improve StormBot. If this interests"
+                #                                       " you please DM @ZombieEar")
                 if ran_val == 6:
-                    embed = discord.Embed(title="Recruiting Python Programmer",
-                                          description="Are you a programmer and looking to help improve the CoCo"
-                                                      " Clan community. ZombieEar is currently seeking someone with"
-                                                      " python knowledge to help improve StormBot. If this interests"
-                                                      " you please DM @ZombieEar")
-                if ran_val == 7:
                     embed = discord.Embed(title="Recruiting Web Developer",
                                           description="Are you a web developer and looking to help improve the CoCo"
                                                       " Clan community? Woj is currently seeking someone with"

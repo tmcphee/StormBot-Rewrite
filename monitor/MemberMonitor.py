@@ -132,7 +132,7 @@ async def update_member(member, before, after):
             ins_roles_url = "https://cococlan.report/api/Discord/" + str(member.guild.id) + "/User/" \
                             + str(after.id) + "/Roles/" + str(role.id) + "/Add"
             s.get(ins_roles_url, headers=headers)
-        print("Update roles for " + str(member) + "to " + new_roles)
+        print("Update roles for " + str(member.nick) + " to " + new_roles)
 
     if str(before) != str(after):
         if get_user == []:

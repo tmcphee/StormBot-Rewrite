@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ecf59352-e6a0-4dfe-a8c9-cc41635bebb8" name="Default" comment="Init">
-      <change beforePath="$PROJECT_DIR$/.idea/StormBot-Rewrite.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/StormBot-Rewrite.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/monitor/MemberMonitor.py" beforeDir="false" afterPath="$PROJECT_DIR$/monitor/MemberMonitor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/monitor/MessageBroadcast.py" beforeDir="false" afterPath="$PROJECT_DIR$/monitor/MessageBroadcast.py" afterDir="false" />
     </list>
@@ -24,7 +21,7 @@
       <file leaf-file-name="StormBotRewrite.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/StormBotRewrite.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3247">
+            <state relative-caret-position="-484">
               <caret line="248" column="34" lean-forward="true" selection-start-line="248" selection-start-column="34" selection-end-line="248" selection-end-column="34" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
@@ -36,8 +33,8 @@
       <file leaf-file-name="MemberMonitor.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/monitor/MemberMonitor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="131" column="57" lean-forward="true" selection-start-line="131" selection-start-column="57" selection-end-line="131" selection-end-column="57" />
+            <state relative-caret-position="289">
+              <caret line="134" column="74" lean-forward="true" selection-start-line="134" selection-start-column="74" selection-end-line="134" selection-end-column="74" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -48,8 +45,8 @@
       <file leaf-file-name="MessageBroadcast.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monitor/MessageBroadcast.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="451">
-              <caret line="81" lean-forward="true" selection-start-line="81" selection-end-line="81" />
+            <state relative-caret-position="102">
+              <caret line="6" column="20" selection-start-line="6" selection-start-column="20" selection-end-line="6" selection-end-column="20" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -260,7 +257,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.28082192" />
@@ -414,8 +411,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/monitor/MessageBroadcast.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="451">
-          <caret line="81" lean-forward="true" selection-start-line="81" selection-end-line="81" />
+        <state relative-caret-position="102">
+          <caret line="6" column="20" selection-start-line="6" selection-start-column="20" selection-end-line="6" selection-end-column="20" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
@@ -424,7 +421,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/StormBotRewrite.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3247">
+        <state relative-caret-position="-484">
           <caret line="248" column="34" lean-forward="true" selection-start-line="248" selection-start-column="34" selection-end-line="248" selection-end-column="34" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
@@ -434,8 +431,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/monitor/MemberMonitor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="131" column="57" lean-forward="true" selection-start-line="131" selection-start-column="57" selection-end-line="131" selection-end-column="57" />
+        <state relative-caret-position="289">
+          <caret line="134" column="74" lean-forward="true" selection-start-line="134" selection-start-column="74" selection-end-line="134" selection-end-column="74" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
