@@ -1,7 +1,7 @@
-import discord
-import pyodbc
-from odbc.mssql import *
-import time
+# import discord
+# import pyodbc
+# from odbc.mssql import *
+# import time
 
 
 # CONFIG

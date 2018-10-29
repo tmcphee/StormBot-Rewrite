@@ -370,38 +370,69 @@ async def staff(ctx):
     headmod_found = False
     mod_found = False
     lead_found = False
+    admin_found = False
 
     hmods = []
     mods = []
+    lead = ''
+    admin = ''
     for member in server.members:
         roles = fetch_roles(member)
         roles_list = member.roles  # to allow for equating directly, otherwise moderator and head mods get mixed
         if clan_string in roles:
             for role in roles_list:
-                if 'Head Moderator' == role.name:
-                    headmod_found = True
-                    hmods.append(member.mention)
-                if 'Moderator' == role.name:
-                    mod_found = True
-                    mods.append(member.mention)
-                if 'Leader' == role.name:
+                if 'Clan Leader' == role.name:
                     lead_found = True
                     lead = member.mention
+                if 'Admin' == role.name:
+                    do_not_include = False
+                    for member_role in member.roles:
+                        if member_role.name == 'Clan Leader':
+                            do_not_include = True
+                    if do_not_include is False:
+                        admin_found = True
+                        admin = member.mention
+                if 'Head Moderator' == role.name:
+                    do_not_include = False
+                    for member_role in member.roles:
+                        if member_role.name == 'Clan Leader' or member_role.name == 'Admin':
+                            do_not_include = True
+                    if do_not_include is False:
+                        headmod_found = True
+                        hmods.append(member.mention)
+                if 'Moderator' == role.name:
+                    mod_found = True
+                    do_not_include = False
+                    for member_role in member.roles:
+                        if member_role.name == 'Head Moderator' or member_role.name == 'Admin':
+                            do_not_include = True
+                    if do_not_include is False:
+                        mods.append(member.mention)
 
     if not headmod_found:
-        hmods = 'NIL'
+        hmods = 'None'
     if not mod_found:
-        mods = 'NIL'
+        mods = 'None'
     if not lead_found:
-        lead = 'NIL'
+        lead = 'None'
+    if not admin_found:
+        admin = 'None'
 
+    print('Sending Staff Message to ' + str(ctx.channel))
     emb = (discord.Embed(title="Collective Conscious " + clan_string + " Staff",
                          description="These are your " + clan_string + " staff. Head Moderators and Admins can help with"
                                                                        " joining the clan. Moderators can help with any other inquiries.",
                          color=0x49ad3f))
-    emb.add_field(name='Leader', value=lead, inline=True)
-    emb.add_field(name='Head Moderator', value=', '.join(hmods), inline=True)
-    emb.add_field(name='Moderator', value=', '.join(mods), inline=True)
+    emb.add_field(name='Clan Leader', value=lead, inline=True)
+    emb.add_field(name='Admins', value=str(admin), inline=True)
+    if headmod_found:
+        emb.add_field(name='Head Moderator', value=', '.join(hmods), inline=True)
+    else:
+        emb.add_field(name='Head Moderator', value=hmods, inline=True)
+    if mod_found:
+        emb.add_field(name='Moderator', value=', '.join(mods), inline=True)
+    else:
+        emb.add_field(name='Moderator', value=mods, inline=True)
     await channel.send(embed=emb)
 
 
