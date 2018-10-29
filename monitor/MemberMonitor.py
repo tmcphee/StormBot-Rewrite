@@ -148,7 +148,7 @@ async def update_member(member, before, after):
 async def add_member_database(member):
     print("Warning 0012 -- MEMBER *" + str(member) + "* NOT FOUND - Adding user to DataBase")
     s = requests.Session()
-    s.get('https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-          '/AddUser/' + str(member) + '/' + str(member.nick) + ''
-          , headers=headers)
+    url = 'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) \
+          + '/AddUser/' + str(member).replace('#', '!') + '/' + str(member.nick).replace('#', '!') + ''
+    s.get(url, headers=headers)
 
