@@ -401,12 +401,12 @@ async def staff(ctx):
                         headmod_found = True
                         hmods.append(member.mention)
                 if 'Moderator' == role.name:
-                    mod_found = True
                     do_not_include = False
                     for member_role in member.roles:
                         if member_role.name == 'Head Moderator' or member_role.name == 'Admin':
                             do_not_include = True
                     if do_not_include is False:
+                        mod_found = True
                         mods.append(member.mention)
 
     if not headmod_found:
@@ -418,7 +418,10 @@ async def staff(ctx):
     if not admin_found:
         admin = 'None'
 
-    print('Sending Staff Message to ' + str(ctx.channel))
+    # print(str(headmod_found) + ', ' +  str(mod_found) + ', ' + str(lead_found) + ', ' + str(admin_found))
+    # print(str(hmods) + ', ' + str(mods) + ', ' + str(lead) + ', ' + str(admin))
+    print('Sending ?staff command to ' + str(ctx.channel))
+
     emb = (discord.Embed(title="Collective Conscious " + clan_string + " Staff",
                          description="These are your " + clan_string + " staff. Head Moderators and Admins can help with"
                                                                        " joining the clan. Moderators can help with any other inquiries.",

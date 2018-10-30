@@ -33,7 +33,7 @@ async def voip_tracker(member, before, after):
                 , headers=headers)
             get_user = json.loads(req1.text)
             if get_user is []:
-                add_member_database(after)
+                await add_member_database(after)
             req2 = s.get(
                 'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
                 '/Activity/Today'
@@ -62,7 +62,7 @@ async def message_tracker(client, message):
                 , headers=headers)
     get_user = json.loads(req1.text)
     if get_user is []:
-        add_member_database(sender)
+        await add_member_database(sender)
     req2 = s.get('https://cococlan.report/api/Discord/' + str(message.guild.id) + '/User/' + str(message.author.id) +
                  '/Activity/Today'
                  , headers=headers)
