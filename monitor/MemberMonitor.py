@@ -2,7 +2,7 @@ import json
 import requests
 import asyncio
 import time
-from coco.CocoFunctions import *
+import discord
 
 text_file = open("StormBot.config", "r")
 BOT_CONFIG = text_file.readlines()
@@ -116,7 +116,7 @@ async def update_member(member, before, after):
             await add_member_database(after)
         else:
             s.get('https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(after.id) +
-                  '/UpdateNickname/' + str(after.nick) + ''
+                  '/UpdateNickname/' + str(after.nick).replace('#', '!') + ''
                   , headers=headers)
             print("-Updated the user: " + str(after.name) + " changed Nickname from *" + str(before.nick) + "* to *"
                   + str(after.nick) + "*")
@@ -140,7 +140,7 @@ async def update_member(member, before, after):
             await add_member_database(after)
         else:
             s.get('https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(after.id) +
-                  '/UpdateNamee/' + str(after) + ''
+                  '/UpdateName/' + str(after).replace('#', '!') + ''
                   , headers=headers)
             print("-Updated the user: " + str(after.id) + " changed Username from  *" + str(before) + "* to *"
                   + str(after) + "*")
