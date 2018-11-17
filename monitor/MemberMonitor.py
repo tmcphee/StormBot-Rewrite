@@ -12,9 +12,10 @@ headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
 
 
 async def voip_tracker(member, before, after):
-    blocked_voip = [381910672256008196, 409383273182003211, 463518519556833280, 382125277066690562, 472090658870394880]
-    #if not member.guild_permissions.administrator:
-        #return
+    blocked_voip = [478428670332239873, 501218568151498754, 382125277066690562, 381910672256008196, 409383273182003211,
+                    463518519556833280]
+    # if not member.guild_permissions.administrator:
+        # return
     if str(after.channel) == 'None':
         return
     if after.channel.id not in blocked_voip:
@@ -23,10 +24,13 @@ async def voip_tracker(member, before, after):
             tempa = str(after.channel)
             start = int(time.time())
             while str(before.channel) != str(after.channel):
+                if after.channel is None:
+                    break
                 if after.channel.id in blocked_voip or str(before.channel) != tempb or str(after.channel) != tempa:
                     break
                 await asyncio.sleep(1)
             duration = ((int(time.time()) - start) / 60)
+            print(str(member) + ' ' + str(duration))
             s = requests.Session()
             req1 = s.get(
                 'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) + ''

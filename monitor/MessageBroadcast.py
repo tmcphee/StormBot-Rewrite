@@ -4,7 +4,7 @@ import time
 import datetime
 from random import randint
 from random import seed
-TOTAL_BROADCASTS = 6    # length
+TOTAL_BROADCASTS = 5    # length
 
 
 async def msg_broadcast(client):
@@ -20,7 +20,7 @@ async def msg_broadcast(client):
             while temp < len(broadcast_list):
                 seed(time.time())
                 channel = client.get_channel(broadcast_list[temp])
-                ran_val = randint(0, TOTAL_BROADCASTS)
+                ran_val = randint(1, TOTAL_BROADCASTS)
                 if ran_val == 0:
                     embed = discord.Embed(title="Friendly Reminder (click me!)",
                                           url="https://www.bungie.net/en/Forums/Post/248172496",
@@ -68,12 +68,12 @@ async def msg_broadcast(client):
                 #                                       " Clan community. ZombieEar is currently seeking someone with"
                 #                                       " python knowledge to help improve StormBot. If this interests"
                 #                                       " you please DM @ZombieEar")
-                if ran_val == 6:
-                    embed = discord.Embed(title="Recruiting Web Developer",
-                                          description="Are you a web developer and looking to help improve the CoCo"
-                                                      " Clan community? Woj is currently seeking someone with"
-                                                      " knowledge of css and html to help create CoCo's first clan" 
-                                                      " website. If this interests you please DM @dasWoj#1113")
+                # if ran_val == 6:
+                #     embed = discord.Embed(title="Recruiting Web Developer",
+                #                           description="Are you a web developer and looking to help improve the CoCo"
+                #                                       " Clan community? Woj is currently seeking someone with"
+                #                                       " knowledge of css and html to help create CoCo's first clan"
+                #                                       " website. If this interests you please DM @dasWoj#1113")
                 await channel.send(embed=embed)
                 temp = temp + 1
             await asyncio.sleep(60)
