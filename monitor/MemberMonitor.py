@@ -12,8 +12,7 @@ headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
 
 
 async def voip_tracker(member, before, after):
-    blocked_voip = [478428670332239873, 501218568151498754, 382125277066690562, 381910672256008196, 409383273182003211,
-                    463518519556833280]
+    blocked_voip = [478428670332239873, 501218568151498754, 382125277066690562, 381910672256008196, 409383273182003211]
     # if not member.guild_permissions.administrator:
         # return
     if str(after.channel) == 'None':
@@ -73,7 +72,7 @@ async def message_tracker(client, message):
     get_activity = json.loads(req2.text)
     if get_activity == []:
         s.get('https://cococlan.report/api/Discord/' + str(message.guild.id) + '/User/' + str(message.author.id) +
-                 '/InsertActivity/'+ str(0) + '/' + str(1) + ''
+                 '/InsertActivity/' + str(0) + '/' + str(1) + ''
               , headers=headers)
     else:
         s.get('https://cococlan.report/api/Discord/' + str(message.guild.id) + '/User/' + str(message.author.id) +
