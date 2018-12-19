@@ -437,6 +437,127 @@ async def staff(ctx):
     else:
         emb.add_field(name='Moderator', value=mods, inline=True)
     await channel.send(embed=emb)
+	
+	
+def getServerTimeRoles(server):
+    server_roles = server.roles
+
+    week_re = re.compile('\d+ Week')
+    month_re = re.compile('\d+ Month')
+    year_re = re.compile('\d+ Year')
+
+    week_roles = []
+    month_roles = []
+    year_roles = []
+    week_roles_values = []
+    month_roles_values = []
+    year_roles_values = []
+
+    for i in range(len(server_roles)):
+        role_str = str(server_roles[i])
+        if re.search(week_re, role_str) is not None:
+            week_roles.append(server_roles[i])
+            week_roles_values.append(int(re.search(week_re, role_str).group().split()[0]))
+        elif re.search(month_re, role_str) is not None:
+            month_roles.append(server_roles[i])
+            month_roles_values.append(int(re.search(month_re, role_str).group().split()[0]))
+        elif re.search(year_re, role_str) is not None:
+            year_roles.append(server_roles[i])
+            year_roles_values.append(int(re.search(year_re, role_str).group().split()[0]))
+
+    print(', '.join([str(i) for i in week_roles]))
+    print(', '.join([str(i) for i in month_roles]))
+    print(', '.join([str(i) for i in year_roles]))
+
+    # we arrange them backwards because we want to start searching for the longest time first later
+    arrangedWeekRoles = [week_roles[i] for i in sorted(range(len(week_roles_values)), key=lambda k: week_roles_values[k]
+                                                       , reverse=True)]
+    arrangedWeek_timedeltas = [datetime.timedelta(days=7*week_roles_values[i]) for i in
+                               sorted(range(len(week_roles_values)), key=lambda k: week_roles_values[k], reverse=True)]
+
+    arrangedMonthRoles = [month_roles[i] for i in sorted(range(len(month_roles_values)), key=lambda k:month_roles_values[k]
+                                                       , reverse=True)]
+    arrangedMonth_timedeltas = [datetime.timedelta(days=30 * month_roles_values[i]) for i in
+                                sorted(range(len(month_roles_values)), key=lambda k: month_roles_values[k], reverse=True)]
+
+    arrangedYearRoles = [year_roles[i] for i in sorted(range(len(year_roles_values)), key=lambda k:year_roles_values[k]
+                                                       , reverse=True)]
+    arrangedYear_timedeltas = [datetime.timedelta(days=365 * year_roles_values[i]) for i in
+                               sorted(range(len(year_roles_values)), key=lambda k: year_roles_values[k], reverse=True)]
+
+
+    # we assume that all year trophies > month trophies > week trophies etc. e.g. there are no '5 Week' trophies
+    arrangedRoles = [role for sublist in [arrangedYearRoles,arrangedMonthRoles,arrangedWeekRoles] for role in sublist]
+    arrangedRoles_timedeltas = [td for sublist in
+                                [arrangedYear_timedeltas,arrangedMonth_timedeltas,arrangedWeek_timedeltas]
+                                for td in sublist]
+
+    print(', '.join([str(i) for i in arrangedRoles]))
+    print(', '.join([str(i) for i in arrangedRoles_timedeltas]))
+
+    return arrangedRoles, arrangedRoles_timedeltas
+
+	
+@client.command(pass_context=True)
+async def updateTimeRoles(ctx):
+    channel = ctx.channel
+    server = ctx.guild
+
+    rolesTrophies_ID, rolesTrophies_tds = getServerTimeRoles(server)
+
+    # monthTrophies = [5, 3, 2, 1]
+    # roleTrophies = [(str(i) + ' Month') for i in monthTrophies]
+
+    # rolesTrophies_ID = [discord.utils.get(server.roles, name=i) for i in roleTrophies]
+
+    timenow = datetime.datetime.now()
+
+    updatedMembers = []
+    updatedTrophies_ID = []
+
+    for member in server.members:
+        # roles = fetch_roles(member)
+        roles = member.roles  # to allow for equating directly, otherwise moderator and head mods get mixed
+        join_date = member.joined_at
+        # monthsAge = int((timenow-join_date).days/30)
+
+        # print(member.display_name + " joined at " + str(join_date) + ", months elapsed since then = " + str(monthsAge))
+
+        member_age = timenow - join_date
+
+        for i in range(len(rolesTrophies_ID)):
+            # iterate down the pre-arranged list in descending order
+
+            if member_age >= rolesTrophies_tds[i]:
+                if rolesTrophies_ID[i] not in roles:
+                    print('attempting to update ' + str(rolesTrophies_ID[i]) + ' trophy for ' + str(member.display_name))
+                    updatedMembers.append(member.mention)
+                    updatedTrophies_ID.append(rolesTrophies_ID[i])
+                    await member.add_roles(rolesTrophies_ID[i])
+
+                    # only need to iterate over smaller ages
+                    for old_role in rolesTrophies_ID[i+1:]:
+                        if old_role in roles:
+                            print('attempting to remove previous role ' + str(old_role) + ' for ' + str(member.display_name))
+                            await member.remove_roles(old_role)
+                break  # you break on the largest monthTrophy, but only update if it's not currently the right one
+
+    emb = (discord.Embed(title="Membership Trophy Role Updates",
+                         description="The following members have had their trophies updated:",
+                         color=0x49ad3f))
+    for i in range(len(rolesTrophies_ID)):
+        clippedMembers = []
+        for k in range(len(updatedMembers)):  # form the shortened list
+            if updatedTrophies_ID[k] == rolesTrophies_ID[i]:
+                clippedMembers.append(updatedMembers[k])
+        if len(clippedMembers) > 0:
+            emb.add_field(name='New ' + str(rolesTrophies_ID[i]) + ' Trophies', value=(','.join(clippedMembers)),
+                          inline=False)
+        else:
+            emb.add_field(name='New ' + str(rolesTrophies_ID[i]) + ' Trophies', value='None',
+                          inline=False)
+
+    await channel.send(embed=emb)
 
 
 client.loop.create_task(list_servers())
