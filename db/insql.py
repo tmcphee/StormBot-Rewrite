@@ -35,12 +35,12 @@ else:
 
 class insql:
 
-    def update(self, query, *params):
+    def update1(self, query, *params):
         global cursor, connect
         cursor.execute(query, *params)
         connect.commit()
 
-    def select(self, query, *params):
+    def select1(self, query, *params):
         global cursor, connect
         cursor.execute(query, *params)
         return cursor

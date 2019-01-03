@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set "VIRTUAL_ENV=C:\Users\T\PycharmProjects\Project\StormBot-Rewrite\venv"
+set "VIRTUAL_ENV=C:\Users\T\PycharmProjects\new\StormBot-Rewrite\venv"
 
 if not defined PROMPT (
     set "PROMPT=$P$G"

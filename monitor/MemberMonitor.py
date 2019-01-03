@@ -1,14 +1,14 @@
-import json
-import requests
 import asyncio
 import time
 import discord
+import datetime
+from db import *
+
+_sql = mssql()
 
 text_file = open("StormBot.config", "r")
 BOT_CONFIG = text_file.readlines()
 text_file.close()
-headers = {}
-headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
 
 
 async def voip_tracker(member, before, after):
@@ -29,29 +29,22 @@ async def voip_tracker(member, before, after):
                     break
                 await asyncio.sleep(1)
             duration = ((int(time.time()) - start) / 60)
-            print(str(member) + ' ' + str(duration))
-            s = requests.Session()
-            req1 = s.get(
-                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) + ''
-                , headers=headers)
-            get_user = json.loads(req1.text)
-            if get_user is []:
+            get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ? and ServerID = ?", str(member.id), member.guild.id)
+            if get_user is 'None':
                 await add_member_database(after)
-            req2 = s.get(
-                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-                '/Activity/Today'
-                , headers=headers)
-            get_activity = json.loads(req2.text)
-            if get_activity == []:
-                s.get(
-                    'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-                    '/InsertActivity/' + str(1) + '/' + str(int(duration)) + ''
-                    , headers=headers)
+            get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ServerID = ? and"
+                                              "datediff(dd, ActivityDate, getdate()) = 0"
+                                        , str(member.id), member.guild.id)
+            rows = get_activity.fetchall()
+            if rows == []:
+                mssql.update(_sql, "INSERT INTO DiscordActivity VALUES (?, ?, ?, ?, ?)",
+                             str(member.id), int(duration), 0, member.guild.id
+                             , datetime.datetime.now())
             else:
-                s.get(
-                    'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) +
-                    '/UpdateActivity/' + str(1) + '/' + str(int(duration)) + ''
-                    , headers=headers)
+                query = "UPDATE DiscordActivity" \
+                        " SET Minutes_Voice = Minutes_Voice + ?" \
+                        " WHERE DiscordID = ? and datediff(dd, ActivityDate, getdate()) = 0"
+                mssql.update(_sql, query, duration, str(member.id))
 
 
 async def message_tracker(client, message):
@@ -60,24 +53,22 @@ async def message_tracker(client, message):
     sender = message.author
     if message.author == client.user:  # do not want the bot to reply to itself
         return
-    s = requests.Session()
-    req1 = s.get('https://cococlan.report/api/Discord/' + str(message.guild.id) + '/User/' + str(message.author.id) + ''
-                , headers=headers)
-    get_user = json.loads(req1.text)
-    if get_user is []:
+    get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ? and ServerID = ?", str(sender.id), sender.guild.id)
+    if get_user is 'None':
         await add_member_database(sender)
-    req2 = s.get('https://cococlan.report/api/Discord/' + str(message.guild.id) + '/User/' + str(message.author.id) +
-                 '/Activity/Today'
-                 , headers=headers)
-    get_activity = json.loads(req2.text)
-    if get_activity == []:
-        s.get('https://cococlan.report/api/Discord/' + str(message.guild.id) + '/User/' + str(message.author.id) +
-                 '/InsertActivity/' + str(0) + '/' + str(1) + ''
-              , headers=headers)
+    get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ServerID = ? and "
+                                      "datediff(dd, ActivityDate, getdate()) = 0"
+                                , str(sender.id), sender.guild.id)
+    rows = get_activity.fetchall()
+    if rows == []:
+        mssql.update(_sql, "INSERT INTO DiscordActivity VALUES (?, ?, ?, ?, ?)",
+                     str(sender.id), 0, 1, message.guild.id
+                     , datetime.datetime.now())
     else:
-        s.get('https://cococlan.report/api/Discord/' + str(message.guild.id) + '/User/' + str(message.author.id) +
-              '/UpdateActivity/' + str(0) + '/' + str(1) + ''
-              , headers=headers)
+        query = "UPDATE DiscordActivity" \
+                " SET Messages_Sent = Messages_Sent + ?" \
+                " WHERE DiscordID = ? and ServerID = ? and datediff(dd, ActivityDate, getdate()) = 0"
+        mssql.update(_sql, query, 1, str(sender.id), sender.guild.id)
 
 
 async def member_joined_discord(client, member):
@@ -109,23 +100,24 @@ async def member_left_discord(client, member):
 
 
 async def update_member(member, before, after):
-    s = requests.Session()
-    req1 = s.get(
-        'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(after.id) + ''
-        , headers=headers)
-    get_user = json.loads(req1.text)
+    temp = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(after.id))
+    retn = temp.fetchall()
     if before.nick != after.nick:
-        if get_user == []:
+        if len(retn) == 0:
             await add_member_database(after)
         else:
-            s.get('https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(after.id) +
-                  '/UpdateNickname/' + str(after.nick).replace('#', '!') + ''
-                  , headers=headers)
-            print("-Updated the user: " + str(after.name) + " changed Nickname from *" + str(before.nick) + "* to *"
+            query = """
+                                           UPDATE DiscordUsers
+                                           SET Nickname = ?
+                                           WHERE DiscordID = ?
+                                        """
+            data = (str(after.nick), str(after.id))
+            mssql.update(_sql, query, data)
+            print("-Updated the user: " + after.name + " changed Nickname from *" + str(before.nick) + "* to *"
                   + str(after.nick) + "*")
 
     # UPDATE ROLES
-    new_roles = ""
+    '''new_roles = ""
     if before.roles != after.roles:
         for role in before.roles:
             gc_roles_url = "https://cococlan.report/api/Discord/" + str(member.guild.id) + "/User/" \
@@ -137,22 +129,24 @@ async def update_member(member, before, after):
                             + str(after.id) + "/Roles/" + str(role.id) + "/Add"
             s.get(ins_roles_url, headers=headers)
         print("Update roles for " + str(member.nick) + " to " + new_roles)
-
+'''
     if str(before) != str(after):
-        if get_user == []:
+        if len(retn) == 0:
             await add_member_database(after)
         else:
-            s.get('https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(after.id) +
-                  '/UpdateName/' + str(after).replace('#', '!') + ''
-                  , headers=headers)
-            print("-Updated the user: " + str(after.id) + " changed Username from  *" + str(before) + "* to *"
+            sql = """
+                                           UPDATE DiscordUsers
+                                           SET UserName = ?
+                                           WHERE DiscordID = ?
+                                        """
+            data = (str(after), str(after.id))
+            mssql.update(sql, data)
+            print("-Updated the user: " + after.id + " changed Username from  *" + str(before) + "* to *"
                   + str(after) + "*")
 
 
 async def add_member_database(member):
     print("Warning 0012 -- MEMBER *" + str(member) + "* NOT FOUND - Adding user to DataBase")
-    s = requests.Session()
-    url = 'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member.id) \
-          + '/AddUser/' + str(member).replace('#', '!') + '/' + str(member.nick).replace('#', '!') + ''
-    s.get(url, headers=headers)
+    mssql.select(_sql, "INSERT INTO DiscordUsers VALUES (?, ?, ?, ?, ?)"
+                 , str(member), str(member.id), str(member.nick), member.guild.id, 0)
 

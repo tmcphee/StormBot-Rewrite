@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\T\PycharmProjects\Project\StormBot-Rewrite\venv"
+VIRTUAL_ENV="C:\Users\T\PycharmProjects\new\StormBot-Rewrite\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

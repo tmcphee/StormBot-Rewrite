@@ -1,12 +1,16 @@
-import datetime
 import sys
 import traceback
 import logging
+import re
 from discord.ext.commands import Bot
 from monitor.MemberMonitor import *
 from monitor.MessageBroadcast import *
 from instance.main import *
+from db import *
+from datetime import datetime, timedelta
 systemstart = int(time.time())
+
+_sql = mssql()
 
 
 def setup_logging_to_file(filename):
@@ -30,6 +34,7 @@ def log_exception(e):
             exception_docstring=e.__doc__,
             exception_message=e,
             line=trace_back.tb_lineno))
+
 
 
 #_sql = mssql()
@@ -105,50 +110,13 @@ async def display():
     try:
         await client.wait_until_ready()
         while not client.is_closed():
-            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V2.0 | BETA"))
-            await asyncio.sleep(20)
-            await client.change_presence(activity=discord.Game("DEV: ZombieEar | The Woj"))
-            await asyncio.sleep(3)
-            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V2.0 | BETA"))
-            await asyncio.sleep(20)
+            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V3.0.1"))
+            #await client.change_presence(activity=discord.Game("TEST IN PROGRESS"))
+            #await asyncio.sleep(20)
+            #await client.change_presence(activity=discord.Game("V2.0"))
+            #await asyncio.sleep(20)
     except Exception as e:
         log_exception(str(e))
-
-''' 
-# Begin commands
-@client.command(pass_context=True)
-async def purge(ctx, clan):
-    clan_ids = {
-        1: 2926181,
-        2: 3089039,
-        3: 3092882,
-        4: 3143454,
-        5: 3208812,
-    }
-    clan_id = clan_ids.get(int(clan))
-    cur = mssql.select(_sql, "select * from clans where ClanId = ?", clan_id)
-    rows = cur.fetchall()
-    for row in rows:
-        print("Purging " + row.ClanName)
-        await client.say("Purging " + str(row.ClanName))
-        await update_coco_roles(_sql, client, clan_id, str(row.ClanName))
-
-
-@client.command(pass_conext=True)  # have this function run at least once a week to audit
-async def users():
-    server_id = '162706186272112640'  # StormBot
-    server = client.get_server(server_id)
-    for member in server.members:
-        mssql.update(_sql, "if not exists(select * from DiscordUsers where DiscordID=?) begin insert into DiscordUsers"
-                           " (DiscordID,UserName,Nickname,ServerID) values(?,?,?,?) end",
-                     str(member.id), str(member.id), str(member), str(member.display_name), server_id)
-        for role in member.roles:
-            mssql.update(_sql, "if not exists(select * from DiscordRoles_Users where DiscordID=? and RoleId=?) "
-                               "begin insert into DiscordRoles_Users(DiscordID,RoleId) values(?,?) end", str(member.id),
-                         str(role.id), str(member.id), str(role.id))
-            print(str(role.name))
-        print(str(member))
-'''
 
 
 @client.command(pass_context=True)
@@ -158,31 +126,64 @@ async def activity(ctx):
     content = message.content
     member = ctx.message.author
     mod_ck = moderator_check(member)
-    if (mod_ck is True) or member.guild_permissions.administrator:
-        s = requests.Session()
-        if "<@" in content:
-            member_id = str(content[12:-1])
-            temp_con = str(content[12:-1])
-            if "!" in member_id:
-                member_id = temp_con[1:]
-
-            req1 = s.get(
-                'https://cococlan.report/api/Discord/' + str(member.guild.id) + '/User/' + str(member_id) + '/Activity'
-                , headers=headers)
-            user_dat = json.loads(req1.text)
-
-            emb = (discord.Embed(title="Activity Request:", color=0x49ad3f))
-            emb.add_field(name='User', value=user_dat[0]['userName'], inline=True)
-            emb.add_field(name='User ID', value=user_dat[0]['discordId'], inline=True)
-            emb.add_field(name='Nickname/BattleTag', value=user_dat[0]['nickName'], inline=True)
-            emb.add_field(name='Current Voice Activity', value=user_dat[0]['voip'], inline=True)
-            emb.add_field(name='Current Message Activity', value=user_dat[0]['totalMessage'], inline=True)
-            emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
-            await channel.send(embed=emb)
+    if not((mod_ck is True) or member.guild_permissions.administrator):
+        return
+    if "<@" in content:
+        member_id = str(content[12:-1])
+        temp_con = str(content[12:-1])
+        if "!" in member_id:
+            member_id = temp_con[1:]
     else:
-        await channel.send('Access Denied - You are not a Moderator or Administrator')
+        member_id = str(member.id)
 
+    import datetime, calendar
 
+    lastSunday = datetime.date.today()
+    nextSunday = datetime.date.today()
+
+    oneday = datetime.timedelta(days=1)
+
+    while lastSunday.weekday() != calendar.SUNDAY:
+        lastSunday -= oneday
+    while nextSunday.weekday() != calendar.SUNDAY:
+        nextSunday += oneday
+
+    temp = str(lastSunday).split('-')
+    temp2 = str(nextSunday).split('-')
+
+    begin = datetime.datetime.now().replace(day=int(temp[2]), year=int(temp[0]), month=int(temp[1]))
+    end = datetime.datetime.now().replace(day=int(temp2[2]), year=int(temp2[0]), month=int(temp2[1]))
+
+    get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ? and ServerID = ?"
+                            , str(member.id), member.guild.id)
+    user = get_user.fetchall()
+
+    get_activity = mssql.select(_sql, "SELECT SUM(Messages_Sent) AS MSG, SUM(Minutes_Voice) AS VOIP"
+                                      " FROM DiscordActivity"
+                                      " WHERE (DiscordID = ?) and (ServerID = ?)"
+                                      " and ActivityDate between cast(? as datetime) and cast(? as datetime)"
+                                , str(member.id), str(member.guild.id), begin, end)
+    activity = get_activity.fetchall()
+
+    time = float(int(activity[0][1]) * 60)
+    day = time // (24 * 3600)
+    time = time % (24 * 3600)
+    hour = time // 3600
+    time %= 3600
+    minutes = time // 60
+
+    emb = (discord.Embed(title="Activity Request:",
+                         description=("Date: " + "{:%Y-%m-%d}".format(begin) + " to " + "{:%Y-%m-%d}".format(end)),
+                         color=0x49ad3f))
+    emb.add_field(name='User', value=user[0][1], inline=True)
+    emb.add_field(name='User ID', value=user[0][2], inline=True)
+    emb.add_field(name='Nickname/BattleTag', value=user[0][3], inline=True)
+    emb.add_field(name='Discord Voice Time', value=("%dd %dh %dm" % (day, hour, minutes)), inline=True)
+    emb.add_field(name='Discord Messages Sent', value=activity[0][0], inline=True)
+    emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+    await channel.send(embed=emb)
+
+'''
 @client.command(pass_context=True)
 async def activitys(ctx):
     channel = ctx.channel
@@ -224,7 +225,7 @@ async def activitys(ctx):
             await channel.send(embed=emb)
     else:
         await channel.send('Access Denied - You are not a Moderator or Administrator')
-
+'''
 
 @client.command(pass_context=True)
 async def status(ctx):
@@ -232,10 +233,16 @@ async def status(ctx):
     member = ctx.message.author
     mod_ck = moderator_check(member)
     if (mod_ck is True) or member.guild_permissions.administrator:
-        duration = int(time.time()) - systemstart
-        dhours = (duration / 3600)
+        duration = float(time.time()) - systemstart
+        day = duration // (24 * 3600)
+        duration = duration % (24 * 3600)
+        hour = duration // 3600
+        duration %= 3600
+        minutes = duration // 60
+        duration %= 60
+        seconds = duration
         emb = (discord.Embed(title="StormBot Status:", color=0xdc8545))
-        emb.add_field(name='Uptime: ', value=(str(round(dhours, 2)) + "hrs"), inline=True)
+        emb.add_field(name='Uptime: ', value=("%dd %dh %dm %ds" % (day, hour, minutes, seconds)), inline=True)
         await channel.send(embed=emb)
 
 
@@ -243,7 +250,8 @@ async def status(ctx):
 async def test(ctx):
     member = ctx.message.author
     if member.guild_permissions.administrator:
-        launch_instance('StormBot-Instance-test.py', TOKEN, APIKEY)
+        mssql.select(_sql, "INSERT INTO DiscordUsers VALUES (?, ?, ?, ?, ?)"
+                     , "ZombieEar#0493", "162705828883726336", "None", 451097751975886858, 0)
 
 '''
 @client.command(pass_context=True)
@@ -437,8 +445,8 @@ async def staff(ctx):
     else:
         emb.add_field(name='Moderator', value=mods, inline=True)
     await channel.send(embed=emb)
-	
-	
+
+
 def getServerTimeRoles(server):
     server_roles = server.roles
 
