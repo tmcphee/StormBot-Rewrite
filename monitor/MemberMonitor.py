@@ -32,8 +32,8 @@ async def voip_tracker(member, before, after):
             get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ? and ServerID = ?", str(member.id), member.guild.id)
             if get_user is 'None':
                 await add_member_database(after)
-            get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ServerID = ? and"
-                                              "datediff(dd, ActivityDate, getdate()) = 0"
+            get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ServerID = ?"
+                                              " and datediff(dd, ActivityDate, getdate()) = 0"
                                         , str(member.id), member.guild.id)
             rows = get_activity.fetchall()
             if rows == []:
