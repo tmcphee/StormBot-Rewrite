@@ -2,10 +2,21 @@
 Updated version of StormBot. Running the latest Discord.py
 
 ### Hidden Tokens
-All private constants are stored in a file 'StormBot.config'. This file is to be placed in the main directitory alongside StormBotRewrite.py in the following format:
+All private constants are stored in seperate files 'StormBot.cofig' and 'Database.config. Thes files should be place alongside the StormBotRewrite.py file. 
+
+StormBot.config
 ```
 BOT TOKEN
 DATABASE API KEY
+```
+
+Database.config
+```
+IP,PORT
+Database
+Username
+Password
+Driver
 ```
 
 ### Discord API
