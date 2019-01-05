@@ -2,7 +2,7 @@ import sys
 import traceback
 import logging
 import re
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, MemberConverter
 from monitor.MemberMonitor import *
 from monitor.MessageBroadcast import *
 from instance.main import *
@@ -450,9 +450,9 @@ async def staff(ctx):
 def getServerTimeRoles(server):
     server_roles = server.roles
 
-    week_re = re.compile('\d+ Week')
-    month_re = re.compile('\d+ Month')
-    year_re = re.compile('\d+ Year')
+    week_re = re.compile('\d*\.?\d+ Week')
+    month_re = re.compile('\d*\.?\d+ Month')
+    year_re = re.compile('\d*\.?\d+ Year')
 
     week_roles = []
     month_roles = []
@@ -465,13 +465,13 @@ def getServerTimeRoles(server):
         role_str = str(server_roles[i])
         if re.search(week_re, role_str) is not None:
             week_roles.append(server_roles[i])
-            week_roles_values.append(int(re.search(week_re, role_str).group().split()[0]))
+            week_roles_values.append(float(re.search(week_re, role_str).group().split()[0]))
         elif re.search(month_re, role_str) is not None:
             month_roles.append(server_roles[i])
-            month_roles_values.append(int(re.search(month_re, role_str).group().split()[0]))
+            month_roles_values.append(float(re.search(month_re, role_str).group().split()[0]))
         elif re.search(year_re, role_str) is not None:
             year_roles.append(server_roles[i])
-            year_roles_values.append(int(re.search(year_re, role_str).group().split()[0]))
+            year_roles_values.append(float(re.search(year_re, role_str).group().split()[0]))
 
     print(', '.join([str(i) for i in week_roles]))
     print(', '.join([str(i) for i in month_roles]))
@@ -480,17 +480,17 @@ def getServerTimeRoles(server):
     # we arrange them backwards because we want to start searching for the longest time first later
     arrangedWeekRoles = [week_roles[i] for i in sorted(range(len(week_roles_values)), key=lambda k: week_roles_values[k]
                                                        , reverse=True)]
-    arrangedWeek_timedeltas = [datetime.timedelta(days=7*week_roles_values[i]) for i in
+    arrangedWeek_timedeltas = [timedelta(days=7*week_roles_values[i]) for i in
                                sorted(range(len(week_roles_values)), key=lambda k: week_roles_values[k], reverse=True)]
 
     arrangedMonthRoles = [month_roles[i] for i in sorted(range(len(month_roles_values)), key=lambda k:month_roles_values[k]
                                                        , reverse=True)]
-    arrangedMonth_timedeltas = [datetime.timedelta(days=30 * month_roles_values[i]) for i in
+    arrangedMonth_timedeltas = [timedelta(days=30 * month_roles_values[i]) for i in
                                 sorted(range(len(month_roles_values)), key=lambda k: month_roles_values[k], reverse=True)]
 
     arrangedYearRoles = [year_roles[i] for i in sorted(range(len(year_roles_values)), key=lambda k:year_roles_values[k]
                                                        , reverse=True)]
-    arrangedYear_timedeltas = [datetime.timedelta(days=365 * year_roles_values[i]) for i in
+    arrangedYear_timedeltas = [timedelta(days=365 * year_roles_values[i]) for i in
                                sorted(range(len(year_roles_values)), key=lambda k: year_roles_values[k], reverse=True)]
 
 
@@ -501,11 +501,62 @@ def getServerTimeRoles(server):
                                 for td in sublist]
 
     print(', '.join([str(i) for i in arrangedRoles]))
-    print(', '.join([str(i) for i in arrangedRoles_timedeltas]))
+    print(', '.join([str(i.days) for i in arrangedRoles_timedeltas]))
 
     return arrangedRoles, arrangedRoles_timedeltas
 
 	
+# this is the hidden function, not the command
+async def updateTimeRoles_function(timenow, member, rolesTrophies_ID, rolesTrophies_tds, updatedMembers, updatedTrophies_ID):
+    roles = member.roles  # to allow for equating directly, otherwise moderator and head mods get mixed
+    join_date = member.joined_at
+
+    member_age = timenow - join_date
+    print('Member age is '+str(member_age.days)+' days')
+
+    for i in range(len(rolesTrophies_ID)):
+        # iterate down the pre-arranged list in descending order
+
+        if member_age >= rolesTrophies_tds[i]:
+            if rolesTrophies_ID[i] not in roles:
+                print('attempting to update ' + str(rolesTrophies_ID[i]) + ' trophy for ' + str(member.display_name))
+                updatedMembers.append(member.mention)
+                updatedTrophies_ID.append(rolesTrophies_ID[i])
+                roleGiven = rolesTrophies_ID[i]
+                await member.add_roles(rolesTrophies_ID[i])
+
+                # iterate over everything else to check
+                for old_role in rolesTrophies_ID:
+                    if old_role in roles and old_role is not roleGiven:
+                        print('attempting to remove previous role ' + str(old_role) + ' for ' + str(member.display_name))
+                        await member.remove_roles(old_role)
+            break  # you break on the largest monthTrophy, but only update if it's not currently the right one
+
+    return updatedMembers, updatedTrophies_ID
+	
+	
+@client.command(pass_context=True)
+async def updateIndivTimeRoles(ctx, arg):
+    channel = ctx.channel
+    server = ctx.guild
+    rolesTrophies_ID, rolesTrophies_tds = getServerTimeRoles(server)
+    timenow = datetime.now()
+
+    mc = MemberConverter()
+    member = await mc.convert(ctx, arg)
+    print('Trying to update this user: ' + str(member.display_name))
+
+    updatedMembers, updatedTrophies_ID = await updateTimeRoles_function(timenow, member,
+                                                                        rolesTrophies_ID, rolesTrophies_tds, [], [])
+    emb = (discord.Embed(title="Membership Trophy Role Update",
+                         description=member.mention+" has had their trophies updated:",
+                         color=0x49ad3f))
+    emb.add_field(name='New Trophy', value=(updatedTrophies_ID[0]),  # there should only be one anyway..
+                  inline=False)
+    await channel.send(embed=emb)
+	
+	
+
 @client.command(pass_context=True)
 async def updateTimeRoles(ctx):
     channel = ctx.channel
@@ -513,42 +564,15 @@ async def updateTimeRoles(ctx):
 
     rolesTrophies_ID, rolesTrophies_tds = getServerTimeRoles(server)
 
-    # monthTrophies = [5, 3, 2, 1]
-    # roleTrophies = [(str(i) + ' Month') for i in monthTrophies]
-
-    # rolesTrophies_ID = [discord.utils.get(server.roles, name=i) for i in roleTrophies]
-
-    timenow = datetime.datetime.now()
+    timenow = datetime.now()
 
     updatedMembers = []
     updatedTrophies_ID = []
 
     for member in server.members:
-        # roles = fetch_roles(member)
-        roles = member.roles  # to allow for equating directly, otherwise moderator and head mods get mixed
-        join_date = member.joined_at
-        # monthsAge = int((timenow-join_date).days/30)
-
-        # print(member.display_name + " joined at " + str(join_date) + ", months elapsed since then = " + str(monthsAge))
-
-        member_age = timenow - join_date
-
-        for i in range(len(rolesTrophies_ID)):
-            # iterate down the pre-arranged list in descending order
-
-            if member_age >= rolesTrophies_tds[i]:
-                if rolesTrophies_ID[i] not in roles:
-                    print('attempting to update ' + str(rolesTrophies_ID[i]) + ' trophy for ' + str(member.display_name))
-                    updatedMembers.append(member.mention)
-                    updatedTrophies_ID.append(rolesTrophies_ID[i])
-                    await member.add_roles(rolesTrophies_ID[i])
-
-                    # only need to iterate over smaller ages
-                    for old_role in rolesTrophies_ID[i+1:]:
-                        if old_role in roles:
-                            print('attempting to remove previous role ' + str(old_role) + ' for ' + str(member.display_name))
-                            await member.remove_roles(old_role)
-                break  # you break on the largest monthTrophy, but only update if it's not currently the right one
+        updatedMembers, updatedTrophies_ID = await updateTimeRoles_function(timenow, member, rolesTrophies_ID,
+                                                                      rolesTrophies_tds, updatedMembers,
+                                                                      updatedTrophies_ID)
 
     emb = (discord.Embed(title="Membership Trophy Role Updates",
                          description="The following members have had their trophies updated:",
