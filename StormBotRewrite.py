@@ -505,36 +505,40 @@ def getServerTimeRoles(server):
 
     return arrangedRoles, arrangedRoles_timedeltas
 
-	
+
 # this is the hidden function, not the command
 async def updateTimeRoles_function(timenow, member, rolesTrophies_ID, rolesTrophies_tds, updatedMembers, updatedTrophies_ID):
     roles = member.roles  # to allow for equating directly, otherwise moderator and head mods get mixed
     join_date = member.joined_at
 
     member_age = timenow - join_date
-    print('Member age is '+str(member_age.days)+' days')
+    print('Member '+str(member.display_name)+' age is '+str(member_age.days)+' days')
 
     for i in range(len(rolesTrophies_ID)):
         # iterate down the pre-arranged list in descending order
 
         if member_age >= rolesTrophies_tds[i]:
-            if rolesTrophies_ID[i] not in roles:
+            roleGiven = rolesTrophies_ID[i]  # place this outside the conditionals..
+
+            if roleGiven not in roles:  # then you give him the role
                 print('attempting to update ' + str(rolesTrophies_ID[i]) + ' trophy for ' + str(member.display_name))
                 updatedMembers.append(member.mention)
                 updatedTrophies_ID.append(rolesTrophies_ID[i])
-                roleGiven = rolesTrophies_ID[i]
-                await member.add_roles(rolesTrophies_ID[i])
 
-                # iterate over everything else to check
-                for old_role in rolesTrophies_ID:
-                    if old_role in roles and old_role is not roleGiven:
-                        print('attempting to remove previous role ' + str(old_role) + ' for ' + str(member.display_name))
-                        await member.remove_roles(old_role)
-            break  # you break on the largest monthTrophy, but only update if it's not currently the right one
+                await member.add_roles(rolesTrophies_ID[i])
+            else:
+                print(str(member.display_name)+' already has the correct trophy!')
+
+            # after you've given him the role (or he already has it), iterate over everything else to remove the rest
+            for old_role in rolesTrophies_ID:
+                if old_role in roles and old_role is not roleGiven:
+                    print('attempting to remove previous role ' + str(old_role) + ' for ' + str(member.display_name))
+                    await member.remove_roles(old_role)
+            break  # you break on the largest trophy, but only update if it's not currently the right one
 
     return updatedMembers, updatedTrophies_ID
-	
-	
+
+
 @client.command(pass_context=True)
 async def updateIndivTimeRoles(ctx, arg):
     channel = ctx.channel
@@ -548,11 +552,17 @@ async def updateIndivTimeRoles(ctx, arg):
 
     updatedMembers, updatedTrophies_ID = await updateTimeRoles_function(timenow, member,
                                                                         rolesTrophies_ID, rolesTrophies_tds, [], [])
-    emb = (discord.Embed(title="Membership Trophy Role Update",
-                         description=member.mention+" has had their trophies updated:",
-                         color=0x49ad3f))
-    emb.add_field(name='New Trophy', value=(updatedTrophies_ID[0]),  # there should only be one anyway..
-                  inline=False)
+    if (len(updatedTrophies_ID)>0):
+        emb = (discord.Embed(title="Membership Trophy Role Update",
+                             description=member.mention+" has had their trophies updated:",
+                             color=0x49ad3f))
+        emb.add_field(name='New Trophy', value=(updatedTrophies_ID[0]),  # there should only be one anyway..
+                      inline=False)
+    else:
+        emb = (discord.Embed(title="Membership Trophy Role Update",
+                             description=member.mention+" already has the correct trophy!"
+                                                        " Any erroneous trophies should have been removed..",
+                             color=0x49ad3f))
     await channel.send(embed=emb)
 	
 	
