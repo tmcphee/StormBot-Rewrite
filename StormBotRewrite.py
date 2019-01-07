@@ -66,6 +66,7 @@ async def on_message(message):
     member = message.author
     await client.process_commands(message)
 
+
 @client.event
 async def on_member_join(member):
     await member_joined_discord(client, member)
@@ -112,14 +113,16 @@ async def display():
         while not client.is_closed():
             await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V3.0.1"))
             #await client.change_presence(activity=discord.Game("TEST IN PROGRESS"))
-            #await asyncio.sleep(20)
+            await asyncio.sleep(600)
             #await client.change_presence(activity=discord.Game("V2.0"))
             #await asyncio.sleep(20)
     except Exception as e:
         log_exception(str(e))
 
 
-@client.command(pass_context=True)
+@client.command(pass_context=True, description="Gets the Members activity of current week."
+                                               " 'Use ?activty' for your user or '?acticty @Member'"
+                                               " for another user")
 async def activity(ctx):
     channel = ctx.channel
     message = ctx.message
@@ -133,6 +136,9 @@ async def activity(ctx):
         temp_con = str(content[12:-1])
         if "!" in member_id:
             member_id = temp_con[1:]
+    if str(content[10:-1]).isnumeric():
+        print(str(content[10:]))
+        member_id = str(content[10:])
     else:
         member_id = str(member.id)
 
@@ -155,32 +161,37 @@ async def activity(ctx):
     end = datetime.datetime.now().replace(day=int(temp2[2]), year=int(temp2[0]), month=int(temp2[1]))
 
     get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ? and ServerID = ?"
-                            , str(member.id), member.guild.id)
+                            , str(member_id), member.guild.id)
     user = get_user.fetchall()
+    if user == []:
+        emb = (discord.Embed(title="Activity Request:",
+                             color=0x49ad3f))
+        emb.add_field(name='Error - Bad Request', value=('No member matching id *' + str(member_id) + '* was found in the database'), inline=True)
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+    else:
+        get_activity = mssql.select(_sql, "SELECT SUM(Messages_Sent) AS MSG, SUM(Minutes_Voice) AS VOIP"
+                                          " FROM DiscordActivity"
+                                          " WHERE (DiscordID = ?) and (ServerID = ?)"
+                                          " and ActivityDate between cast(? as datetime) and cast(? as datetime)"
+                                    , str(member_id), str(member.guild.id), begin, end)
+        activity = get_activity.fetchall()
 
-    get_activity = mssql.select(_sql, "SELECT SUM(Messages_Sent) AS MSG, SUM(Minutes_Voice) AS VOIP"
-                                      " FROM DiscordActivity"
-                                      " WHERE (DiscordID = ?) and (ServerID = ?)"
-                                      " and ActivityDate between cast(? as datetime) and cast(? as datetime)"
-                                , str(member.id), str(member.guild.id), begin, end)
-    activity = get_activity.fetchall()
+        time = float(int(activity[0][1]) * 60)
+        day = time // (24 * 3600)
+        time = time % (24 * 3600)
+        hour = time // 3600
+        time %= 3600
+        minutes = time // 60
 
-    time = float(int(activity[0][1]) * 60)
-    day = time // (24 * 3600)
-    time = time % (24 * 3600)
-    hour = time // 3600
-    time %= 3600
-    minutes = time // 60
-
-    emb = (discord.Embed(title="Activity Request:",
-                         description=("Date: " + "{:%Y-%m-%d}".format(begin) + " to " + "{:%Y-%m-%d}".format(end)),
-                         color=0x49ad3f))
-    emb.add_field(name='User', value=user[0][1], inline=True)
-    emb.add_field(name='User ID', value=user[0][2], inline=True)
-    emb.add_field(name='Nickname/BattleTag', value=user[0][3], inline=True)
-    emb.add_field(name='Discord Voice Time', value=("%dd %dh %dm" % (day, hour, minutes)), inline=True)
-    emb.add_field(name='Discord Messages Sent', value=activity[0][0], inline=True)
-    emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+        emb = (discord.Embed(title="Activity Request:",
+                             description=("Date: " + "{:%Y-%m-%d}".format(begin) + " to " + "{:%Y-%m-%d}".format(end)),
+                             color=0x49ad3f))
+        emb.add_field(name='User', value=user[0][1], inline=True)
+        emb.add_field(name='User ID', value=user[0][2], inline=True)
+        emb.add_field(name='Nickname/BattleTag', value=user[0][3], inline=True)
+        emb.add_field(name='Discord Voice Time', value=("%dd %dh %dm" % (day, hour, minutes)), inline=True)
+        emb.add_field(name='Discord Messages Sent', value=activity[0][0], inline=True)
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
     await channel.send(embed=emb)
 
 '''
@@ -227,6 +238,7 @@ async def activitys(ctx):
         await channel.send('Access Denied - You are not a Moderator or Administrator')
 '''
 
+
 @client.command(pass_context=True)
 async def status(ctx):
     channel = ctx.channel
@@ -242,16 +254,17 @@ async def status(ctx):
         duration %= 60
         seconds = duration
         emb = (discord.Embed(title="StormBot Status:", color=0xdc8545))
-        emb.add_field(name='Uptime: ', value=("%dd %dh %dm %ds" % (day, hour, minutes, seconds)), inline=True)
+        emb.add_field(name='Uptime: ', value=("%dd %dh %dm %ds" % (day, hour, minutes, seconds)), inline=False)
+        emb.add_field(name='Latency: ', value=(str(round(client.latency, 2)) + "s"), inline=False)
         await channel.send(embed=emb)
 
 
 @client.command(pass_context=True)
 async def test(ctx):
     member = ctx.message.author
-    if member.guild_permissions.administrator:
-        mssql.select(_sql, "INSERT INTO DiscordUsers VALUES (?, ?, ?, ?, ?)"
-                     , "ZombieEar#0493", "162705828883726336", "None", 451097751975886858, 0)
+    '''if member.guild_permissions.administrator:
+        temp = await client.get_user_profile(162705828883726336)
+        print(str(temp))'''
 
 '''
 @client.command(pass_context=True)
@@ -272,6 +285,7 @@ async def change_nick(ctx):
     print('test')
     await channel.send('<@' + str(message.id) + '> Your Nickname has been updated to \'' + content[1] + '\'')
 '''
+
 
 @client.command(pass_context=True)
 async def announcement(ctx):
