@@ -269,7 +269,7 @@ async def EditMV(ctx):
     contents = content.split()
     member = ctx.message.author
     mod_ck = moderator_check(member)
-    if not ((mod_ck is True) or member.guild_permissions.administrator):
+    if not member.guild_permissions.administrator:
         return
     if len(contents) != 4:
         emb = (discord.Embed(title="Member Message Edit:",
