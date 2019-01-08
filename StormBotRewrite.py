@@ -194,6 +194,138 @@ async def activity(ctx):
         emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
     await channel.send(embed=emb)
 
+
+@client.command(pass_context=True)
+async def EditMM(ctx):
+    channel = ctx.channel
+    message = ctx.message
+    content = message.content
+    contents = content.split()
+    member = ctx.message.author
+    mod_ck = moderator_check(member)
+    if not((mod_ck is True) or member.guild_permissions.administrator):
+        return
+    if len(contents) != 4:
+        emb = (discord.Embed(title="Member Message Edit:",
+                             color=0x49ad3f))
+        emb.add_field(name='Error - Bad Request',
+                      value=('Incorrect Number of perameters. Use *?EditMM <MEMBER ID> <YY-MM-DD> <MSG COUNT>*'), inline=True)
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+        await channel.send(embed=emb)
+        return
+
+    import datetime
+    date = str(contents[2]).split('-')
+
+    begin = datetime.datetime.now().replace(day=int(date[2]), year=int(date[0]), month=int(date[1])
+                                            , hour=0, minute=0, second=0, microsecond=0)
+    end = datetime.datetime.now().replace(day=int(date[2]), year=int(date[0]), month=int(date[1])
+                                          , hour=23, minute=59, second=59, microsecond=999999)
+
+    get_activity = mssql.select(_sql, "SELECT *"
+                                      " FROM DiscordActivity"
+                                      " WHERE (DiscordID = ?) and (ServerID = ?)"
+                                      " and ActivityDate between cast(? as datetime) and cast(? as datetime)"
+                                , str(contents[1]), str(member.guild.id), begin, end)
+    activity = get_activity.fetchall()
+
+    if activity == []:
+        emb = (discord.Embed(title="Member Message Edit:",
+                             color=0x49ad3f))
+        emb.add_field(name='Error - Bad Request',
+                      value=('Member Activity Not Found'),
+                      inline=True)
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+        await channel.send(embed=emb)
+        return
+
+    query = "UPDATE DiscordActivity" \
+            " SET Messages_Sent = ?" \
+            " WHERE DiscordID = ? and ServerID = ? and ActivityDate = ?"
+    temp = mssql.update(_sql, query, int(contents[3]), str(contents[1]), member.guild.id, activity[0][5])
+
+    if temp == []:
+        emb = (discord.Embed(title="Member Message Edit:",
+                             color=0x49ad3f))
+        emb.add_field(name='Error - Bad Request',
+                      value=('Member Activity Not Found'),
+                      inline=True)
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+    else:
+        emb = (discord.Embed(title="Member Message Edit:",
+                             description=('Updated Member: ' + str(contents[1]) + ' MSG count to *' + str(
+                                 contents[3]) + '*'),
+                             color=0x49ad3f))
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+
+    await channel.send(embed=emb)
+
+
+@client.command(pass_context=True)
+async def EditMV(ctx):
+    channel = ctx.channel
+    message = ctx.message
+    content = message.content
+    contents = content.split()
+    member = ctx.message.author
+    mod_ck = moderator_check(member)
+    if not ((mod_ck is True) or member.guild_permissions.administrator):
+        return
+    if len(contents) != 4:
+        emb = (discord.Embed(title="Member Message Edit:",
+                             color=0x49ad3f))
+        emb.add_field(name='Error - Bad Request',
+                      value=('Incorrect Number of perameters. Use *?EditMM <MEMBER ID> <YY-MM-DD> <VOIP COUNT>*'),
+                      inline=True)
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+        await channel.send(embed=emb)
+        return
+
+    import datetime
+    date = str(contents[2]).split('-')
+
+    begin = datetime.datetime.now().replace(day=int(date[2]), year=int(date[0]), month=int(date[1])
+                                            , hour=0, minute=0, second=0, microsecond=0)
+    end = datetime.datetime.now().replace(day=int(date[2]), year=int(date[0]), month=int(date[1])
+                                          , hour=23, minute=59, second=59, microsecond=999999)
+
+    get_activity = mssql.select(_sql, "SELECT *"
+                                      " FROM DiscordActivity"
+                                      " WHERE (DiscordID = ?) and (ServerID = ?)"
+                                      " and ActivityDate between cast(? as datetime) and cast(? as datetime)"
+                                , str(contents[1]), str(member.guild.id), begin, end)
+    activity = get_activity.fetchall()
+
+    if activity == []:
+        emb = (discord.Embed(title="Member Message Edit:",
+                             color=0x49ad3f))
+        emb.add_field(name='Error - Bad Request',
+                      value=('Member Activity Not Found'),
+                      inline=True)
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+        await channel.send(embed=emb)
+        return
+
+    query = "UPDATE DiscordActivity" \
+            " SET Minutes_Voice = ?" \
+            " WHERE DiscordID = ? and ServerID = ? and ActivityDate = ?"
+    temp = mssql.update(_sql, query, int(contents[3]), str(contents[1]), member.guild.id, activity[0][5])
+
+    if temp == []:
+        emb = (discord.Embed(title="Member Message Edit:",
+                             color=0x49ad3f))
+        emb.add_field(name='Error - Bad Request',
+                      value=('Member Activity Not Found'),
+                      inline=True)
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+    else:
+        emb = (discord.Embed(title="Member Message Edit:",
+                             description=('Updated Member: ' + str(contents[1]) + ' VOIP count to *' + str(
+                                 contents[3]) + '*'),
+                             color=0x49ad3f))
+        emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
+
+    await channel.send(embed=emb)
 '''
 @client.command(pass_context=True)
 async def activitys(ctx):
