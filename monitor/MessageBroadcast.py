@@ -19,7 +19,7 @@ headers['Api-Key'] = str(BOT_CONFIG[1]).strip()
 def _get_coco_response(api_call):
     retry_flag = True
     retry_count = 0
-    coco_url = "https://cococlan.report/"
+    coco_url = "https://cocogamers.com/"
     while retry_flag:
         try:
             s = requests.Session()

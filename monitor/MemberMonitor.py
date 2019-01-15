@@ -113,7 +113,7 @@ async def update_member(member, before, after):
                                         """
             data = (str(after.nick), str(after.id))
             mssql.update(_sql, query, data)
-            print("-Updated the user: " + after.name + " changed Nickname from *" + str(before.nick) + "* to *"
+            print("-Updated the user: " + str(after.name) + " changed Nickname from *" + str(before.nick) + "* to *"
                   + str(after.nick) + "*")
 
     # UPDATE ROLES
@@ -141,7 +141,7 @@ async def update_member(member, before, after):
                                         """
             data = (str(after), str(after.id))
             mssql.update(sql, data)
-            print("-Updated the user: " + after.id + " changed Username from  *" + str(before) + "* to *"
+            print("-Updated the user: " + str(after.id) + " changed Username from  *" + str(before) + "* to *"
                   + str(after) + "*")
 
 
