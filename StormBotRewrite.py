@@ -777,9 +777,8 @@ async def generate_password():
         future = now.replace(hour=23, minute=59, second=0, microsecond=0)
         if str(nownow) == str(future):
             pwrd = "".join(random.sample(s, passlen))
-            print(pwrd)
 
-            query = "UPDATE DiscordActivity" \
+            query = "UPDATE WebAuth" \
                     " SET WebPassword =  ?"
             mssql.update(_sql, query, pwrd)
             await asyncio.sleep(60)
