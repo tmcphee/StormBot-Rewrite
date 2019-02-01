@@ -13,7 +13,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/StormBot_Rewrite$StormBotRewrite.coverage" NAME="StormBotRewrite Coverage Results" MODIFIED="1548983699615" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/StormBot_Rewrite$StormBotRewrite.coverage" NAME="StormBotRewrite Coverage Results" MODIFIED="1548991236609" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/StormBot_Rewrite$StormBot_Rewrite.coverage" NAME="StormBot-Rewrite Coverage Results" MODIFIED="1534784126276" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FUSProjectUsageTrigger">
@@ -53,8 +53,8 @@
       <file leaf-file-name="StormBotRewrite.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/StormBotRewrite.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="404" column="45" lean-forward="true" selection-start-line="404" selection-start-column="45" selection-end-line="404" selection-end-column="45" />
+            <state relative-caret-position="496">
+              <caret line="394" column="48" selection-start-line="394" selection-start-column="48" selection-end-line="394" selection-end-column="48" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -66,7 +66,7 @@
         <entry file="file://$PROJECT_DIR$/monitor/MemberMonitor.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="332">
-              <caret line="70" column="69" lean-forward="true" selection-start-line="67" selection-start-column="8" selection-end-line="70" selection-end-column="69" />
+              <caret line="70" column="69" selection-start-line="67" selection-start-column="8" selection-end-line="70" selection-end-column="69" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -98,8 +98,8 @@
       <file leaf-file-name="MessageBroadcast.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monitor/MessageBroadcast.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="417">
-              <caret line="32" column="54" lean-forward="true" selection-start-line="32" selection-start-column="54" selection-end-line="32" selection-end-column="66" />
+            <state relative-caret-position="510">
+              <caret line="30" column="36" selection-start-line="29" selection-start-column="16" selection-end-line="30" selection-end-column="36" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -171,6 +171,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -207,7 +208,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -393,7 +393,21 @@
       <option name="project" value="LOCAL" />
       <updated>1548986003041</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Added Website integration&#10;Added new message API">
+      <created>1548987547713</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1548987547713</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Added Website integration&#10;Added new message API">
+      <created>1548987692981</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1548987692981</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -407,11 +421,11 @@
       <window_info anchor="bottom" id="Python Console" order="11" />
       <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.2342048" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32897604" />
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.8748222" visible="true" weight="0.18017058" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.87339973" visible="true" weight="0.18176973" />
       <window_info anchor="bottom" id="Docker" order="12" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="right" id="SciView" order="4" />
-      <window_info id="Structure" order="1" sideWeight="0.12517782" side_tool="true" visible="true" weight="0.18017058" />
+      <window_info id="Structure" order="1" sideWeight="0.12660028" side_tool="true" visible="true" weight="0.18176973" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39978212" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -760,7 +774,7 @@
     <entry file="file://$PROJECT_DIR$/monitor/MemberMonitor.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="332">
-          <caret line="70" column="69" lean-forward="true" selection-start-line="67" selection-start-column="8" selection-end-line="70" selection-end-column="69" />
+          <caret line="70" column="69" selection-start-line="67" selection-start-column="8" selection-end-line="70" selection-end-column="69" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
@@ -769,8 +783,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/monitor/MessageBroadcast.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="417">
-          <caret line="32" column="54" lean-forward="true" selection-start-line="32" selection-start-column="54" selection-end-line="32" selection-end-column="66" />
+        <state relative-caret-position="510">
+          <caret line="30" column="36" selection-start-line="29" selection-start-column="16" selection-end-line="30" selection-end-column="36" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
@@ -779,8 +793,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/StormBotRewrite.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="404" column="45" lean-forward="true" selection-start-line="404" selection-start-column="45" selection-end-line="404" selection-end-column="45" />
+        <state relative-caret-position="496">
+          <caret line="394" column="48" selection-start-line="394" selection-start-column="48" selection-end-line="394" selection-end-column="48" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>

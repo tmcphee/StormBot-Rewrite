@@ -27,7 +27,7 @@ async def msg_broadcast(client):
         if str(nownow) == str(future):
             while temp < len(broadcast_list):
                 channel = client.get_channel(broadcast_list[temp])
-                req = str(requests.get(api_url).content)[3:-2]
+                req = str(requests.get(api_url, verify=False).content)[3:-2]
                 req = req.split(";")
                 if req[1] != '':
                     embed = discord.Embed(title=req[0], url=req[1], description=req[2])

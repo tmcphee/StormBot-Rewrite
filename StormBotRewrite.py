@@ -48,6 +48,7 @@ text_file.close()
 TOKEN = str(BOT_CONFIG[0]).strip()
 headers = {}
 url = str(BOT_CONFIG[2]).strip()
+api_url = str(BOT_CONFIG[1]).strip()
 server_startime = time.time()
 
 BOT_PREFIX = "?"
