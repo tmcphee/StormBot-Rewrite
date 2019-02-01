@@ -398,7 +398,7 @@ async def admin_portal(ctx):
             get_auth = mssql.select(_sql, "SELECT * FROM WebAuth")
             auth = get_auth.fetchall()
 
-            embed = discord.Embed(title="StormBot Web Auth", url=(url + '?User=' + auth[0][0] + '&Password=' + auth[0][1]), color=0x008000)
+            embed = discord.Embed(title="StormBot Web Auth", url=(url + '/Login.php?User=' + auth[0][0] + '&Pass=' + auth[0][1]), color=0x008000)
             embed.add_field(name='Server ID:',
                             value=auth[0][0],
                             inline=False)
