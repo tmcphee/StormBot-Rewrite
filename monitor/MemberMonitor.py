@@ -147,6 +147,6 @@ async def update_member(member, before, after):
 
 async def add_member_database(member):
     print("Warning 0012 -- MEMBER *" + str(member) + "* NOT FOUND - Adding user to DataBase")
-    mssql.select(_sql, "INSERT INTO DiscordUsers VALUES (?, ?, ?, ?, ?)"
-                 , str(member), str(member.id), str(member.nick), member.guild.id, 0)
+    mssql.select(_sql, "INSERT INTO DiscordUsers VALUES (?, ?, ?, ?, ?, DEFAULT, ?)"
+                 , str(member), str(member.id), str(member.nick), member.guild.id, 0, datetime.datetime.now())
 

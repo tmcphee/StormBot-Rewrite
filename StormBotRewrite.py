@@ -2,6 +2,7 @@ import sys
 import traceback
 import logging
 import re
+import random
 from discord.ext.commands import Bot, MemberConverter
 from monitor.MemberMonitor import *
 from monitor.MessageBroadcast import *
@@ -46,8 +47,7 @@ text_file.close()
 
 TOKEN = str(BOT_CONFIG[0]).strip()
 headers = {}
-APIKEY = str(BOT_CONFIG[1]).strip()
-headers['Api-Key'] = APIKEY
+url = str(BOT_CONFIG[2]).strip()
 server_startime = time.time()
 
 BOT_PREFIX = "?"
@@ -129,8 +129,6 @@ async def activity(ctx):
     content = message.content
     member = ctx.message.author
     mod_ck = moderator_check(member)
-    if not((mod_ck is True) or member.guild_permissions.administrator):
-        return
     if "<@" in content:
         member_id = str(content[12:-1])
         temp_con = str(content[12:-1])
@@ -194,7 +192,7 @@ async def activity(ctx):
         emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
     await channel.send(embed=emb)
 
-
+'''
 @client.command(pass_context=True)
 async def EditMM(ctx):
     channel = ctx.channel
@@ -325,7 +323,7 @@ async def EditMV(ctx):
                              color=0x49ad3f))
         emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
 
-    await channel.send(embed=emb)
+    await channel.send(embed=emb)'''
 '''
 @client.command(pass_context=True)
 async def activitys(ctx):
@@ -392,11 +390,32 @@ async def status(ctx):
 
 
 @client.command(pass_context=True)
-async def test(ctx):
+async def admin_portal(ctx):
+    channel = ctx.channel
     member = ctx.message.author
-    '''if member.guild_permissions.administrator:
-        temp = await client.get_user_profile(162705828883726336)
-        print(str(temp))'''
+    if member.guild_permissions.administrator:
+        if member.guild.id == 162706186272112640 or member.id == 162705828883726336:
+            get_auth = mssql.select(_sql, "SELECT * FROM WebAuth")
+            auth = get_auth.fetchall()
+
+            embed = discord.Embed(title="StormBot Web Auth", url=(url + '?User=' + auth[0][0] + '&Password=' + auth[0][1]), color=0x008000)
+            embed.add_field(name='Server ID:',
+                            value=auth[0][0],
+                            inline=False)
+            embed.add_field(name='Password:',
+                            value=auth[0][1],
+                            inline=False)
+            embed.add_field(name='Website:',
+                            value=url, inline=False)
+            embed.set_footer(text='I\'m a bot. If you have questions, please contact ZombieEar')
+            await member.send(embed=embed)
+
+            embed2 = discord.Embed(title="StormBot Web Auth",
+            description=('<@' + str(member.id) + '> I sent you a message containing the authentication information')
+                                  , color=0x008000)
+            embed2.set_footer(text='I\'m a bot. If you have questions, please contact ZombieEar')
+            await channel.send(embed=embed2)
+
 
 '''
 @client.command(pass_context=True)
@@ -710,8 +729,7 @@ async def updateIndivTimeRoles(ctx, arg):
                                                         " Any erroneous trophies should have been removed..",
                              color=0x49ad3f))
     await channel.send(embed=emb)
-	
-	
+
 
 @client.command(pass_context=True)
 async def updateTimeRoles(ctx):
@@ -748,7 +766,29 @@ async def updateTimeRoles(ctx):
     await channel.send(embed=emb)
 
 
+#Generates a new password for the website every 24 hours
+async def generate_password():
+    s = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
+    passlen = 22
+    await client.wait_until_ready()
+    while not client.is_closed():
+        now = datetime.datetime.now()
+        nownow = now.replace(second=0, microsecond=0)
+        future = now.replace(hour=23, minute=59, second=0, microsecond=0)
+        if str(nownow) == str(future):
+            pwrd = "".join(random.sample(s, passlen))
+            print(pwrd)
+
+            query = "UPDATE DiscordActivity" \
+                    " SET WebPassword =  ?"
+            mssql.update(_sql, query, pwrd)
+            await asyncio.sleep(60)
+        else:
+            await asyncio.sleep(15)
+
+
 client.loop.create_task(list_servers())
 client.loop.create_task(display())
 client.loop.create_task(msg_broadcast(client))
+client.loop.create_task(generate_password())
 client.run(TOKEN, bot=True, reconnect=True)
