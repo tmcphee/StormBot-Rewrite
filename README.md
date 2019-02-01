@@ -7,7 +7,8 @@ All private constants are stored in seperate files 'StormBot.cofig' and 'Databas
 StormBot.config
 ```
 BOT TOKEN
-DATABASE API KEY
+MESSAGE API LINK
+WEBSITE URL
 ```
 
 Database.config
