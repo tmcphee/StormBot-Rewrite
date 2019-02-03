@@ -1,13 +1,7 @@
 import discord
 import asyncio
-import time
 import datetime
-from random import randint
-from random import seed
 import requests
-import json
-import sys
-# TOTAL_BROADCASTS = 5    # length
 
 text_file = open("StormBot.config", "r")
 BOT_CONFIG = text_file.readlines()

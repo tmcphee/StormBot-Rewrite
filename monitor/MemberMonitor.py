@@ -140,7 +140,7 @@ async def update_member(member, before, after):
                                            WHERE DiscordID = ?
                                         """
             data = (str(after), str(after.id))
-            mssql.update(sql, data)
+            mssql.update(_sql, sql, data)
             print("-Updated the user: " + str(after.id) + " changed Username from  *" + str(before) + "* to *"
                   + str(after) + "*")
 

@@ -1,11 +1,10 @@
-import sys
 import traceback
 import logging
 import re
-import random
 from discord.ext.commands import Bot, MemberConverter
 from monitor.MemberMonitor import *
 from monitor.MessageBroadcast import *
+from monitor.StormBotWeb import *
 from instance.main import *
 from db import *
 from datetime import datetime, timedelta
@@ -394,7 +393,7 @@ async def status(ctx):
 async def admin_portal(ctx):
     channel = ctx.channel
     member = ctx.message.author
-    if member.guild_permissions.administrator:
+    if admin_check(member):
         if member.guild.id == 162706186272112640 or member.id == 162705828883726336:
             get_auth = mssql.select(_sql, "SELECT * FROM WebAuth")
             auth = get_auth.fetchall()
@@ -513,6 +512,25 @@ def moderator_check(member):#check if user is in a Moderator
         if mod in roles:
             result = True
         if programmer in roles:
+            result = True
+        return result
+    except Exception as e:
+        log_exception(str(e))
+
+
+def admin_check(member):#check if user is in a Moderator
+    try:
+        result = False
+        officer = 'Officer'
+        head_sherpa = 'Head Sherpa'
+
+        roles = fetch_roles(member)
+
+        if member.guild_permissions.administrator:
+            result = True
+        if officer in roles:
+            result = True
+        if head_sherpa in roles:
             result = True
         return result
     except Exception as e:
@@ -767,28 +785,8 @@ async def updateTimeRoles(ctx):
     await channel.send(embed=emb)
 
 
-#Generates a new password for the website every 24 hours
-async def generate_password():
-    s = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
-    passlen = 22
-    await client.wait_until_ready()
-    while not client.is_closed():
-        now = datetime.datetime.now()
-        nownow = now.replace(second=0, microsecond=0)
-        future = now.replace(hour=23, minute=59, second=0, microsecond=0)
-        if str(nownow) == str(future):
-            pwrd = "".join(random.sample(s, passlen))
-
-            query = "UPDATE WebAuth" \
-                    " SET WebPassword =  ?"
-            mssql.update(_sql, query, pwrd)
-            await asyncio.sleep(60)
-        else:
-            await asyncio.sleep(15)
-
-
 client.loop.create_task(list_servers())
 client.loop.create_task(display())
+client.loop.create_task(update_password(client))
 client.loop.create_task(msg_broadcast(client))
-client.loop.create_task(generate_password())
 client.run(TOKEN, bot=True, reconnect=True)
