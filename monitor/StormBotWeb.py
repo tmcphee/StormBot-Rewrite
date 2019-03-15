@@ -1,10 +1,9 @@
 import random
 import datetime
-import  asyncio
-from db import *
-_sql = mssql()
+import asyncio
 
 
+'''
 async def update_password(client):
     await client.wait_until_ready()
     while not client.is_closed():
@@ -27,3 +26,4 @@ async def update_password(client):
                 await asyncio.sleep(15)
         except Exception as e:
             print(str(e))
+'''

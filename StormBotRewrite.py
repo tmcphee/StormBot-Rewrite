@@ -4,14 +4,13 @@ import re
 from discord.ext.commands import Bot, MemberConverter
 from monitor.MemberMonitor import *
 from monitor.MessageBroadcast import *
-from monitor.StormBotWeb import *
+#from monitor.StormBotWeb import *
 from instance.main import *
-from db import *
 from datetime import datetime, timedelta
 systemstart = int(time.time())
 
-_sql = mssql()
-
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def setup_logging_to_file(filename):
     logging.basicConfig(filename=filename, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
@@ -46,8 +45,8 @@ text_file.close()
 
 TOKEN = str(BOT_CONFIG[0]).strip()
 headers = {}
-url = str(BOT_CONFIG[2]).strip()
-api_url = str(BOT_CONFIG[1]).strip()
+key = str(BOT_CONFIG[1]).strip()
+api_url = str(BOT_CONFIG[2]).strip()
 server_startime = time.time()
 
 BOT_PREFIX = "?"
@@ -111,7 +110,7 @@ async def display():
     try:
         await client.wait_until_ready()
         while not client.is_closed():
-            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V3.0.1"))
+            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V3.1.2"))
             #await client.change_presence(activity=discord.Game("TEST IN PROGRESS"))
             await asyncio.sleep(600)
             #await client.change_presence(activity=discord.Game("V2.0"))
@@ -155,26 +154,28 @@ async def activity(ctx):
     temp = str(lastSunday).split('-')
     temp2 = str(nextSunday).split('-')
 
+    if temp == temp2:
+        sevenday = datetime.timedelta(days=7)
+        lastSunday -= sevenday
+        temp = str(lastSunday).split('-')
+
     begin = datetime.datetime.now().replace(day=int(temp[2]), year=int(temp[0]), month=int(temp[1]))
     end = datetime.datetime.now().replace(day=int(temp2[2]), year=int(temp2[0]), month=int(temp2[1]))
 
-    get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ? and ServerID = ?"
-                            , str(member_id), member.guild.id)
-    user = get_user.fetchall()
-    if user == []:
+    reg = str(requests.get(api_url + "/API/GetMember.php?id=" + str(key) + "&DiscordID=" + str(member.id)
+                           + "&ServerID=" + str(member.guild.id) + "", verify=False).content)[3:-2]
+    user = reg.split(";")
+    if user[1] == '':
         emb = (discord.Embed(title="Activity Request:",
                              color=0x49ad3f))
         emb.add_field(name='Error - Bad Request', value=('No member matching id *' + str(member_id) + '* was found in the database'), inline=True)
         emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
     else:
-        get_activity = mssql.select(_sql, "SELECT SUM(Messages_Sent) AS MSG, SUM(Minutes_Voice) AS VOIP"
-                                          " FROM DiscordActivity"
-                                          " WHERE (DiscordID = ?) and (ServerID = ?)"
-                                          " and ActivityDate between cast(? as datetime) and cast(? as datetime)"
-                                    , str(member_id), str(member.guild.id), begin, end)
-        activity = get_activity.fetchall()
+        reg2 = str(requests.get(api_url + "/API/GetActivity.php?id=" + str(key) + "&DiscordID=" + str(member.id)
+                               + "&ServerID=" + str(member.guild.id) + "&StartDate=" + str(begin) + "&EndDate=" + str(end) + "", verify=False).content)[3:-2]
+        activity = reg2.split(";")
 
-        time = float(int(activity[0][1]) * 60)
+        time = float(int(activity[0]) * 60)
         day = time // (24 * 3600)
         time = time % (24 * 3600)
         hour = time // 3600
@@ -184,11 +185,11 @@ async def activity(ctx):
         emb = (discord.Embed(title="Activity Request:",
                              description=("Date: " + "{:%Y-%m-%d}".format(begin) + " to " + "{:%Y-%m-%d}".format(end)),
                              color=0x49ad3f))
-        emb.add_field(name='User', value=user[0][1], inline=True)
-        emb.add_field(name='User ID', value=user[0][2], inline=True)
-        emb.add_field(name='Nickname/BattleTag', value=user[0][3], inline=True)
+        emb.add_field(name='User', value=user[1], inline=True)
+        emb.add_field(name='User ID', value=user[2], inline=True)
+        emb.add_field(name='Nickname/BattleTag', value=user[3], inline=True)
         emb.add_field(name='Discord Voice Time', value=("%dd %dh %dm" % (day, hour, minutes)), inline=True)
-        emb.add_field(name='Discord Messages Sent', value=activity[0][0], inline=True)
+        emb.add_field(name='Discord Messages Sent', value=activity[1], inline=True)
         emb.set_footer(text='Requested By: (' + str(member.id) + ') ' + str(member))
     await channel.send(embed=emb)
 
@@ -388,7 +389,7 @@ async def status(ctx):
         emb.add_field(name='Latency: ', value=(str(round(client.latency, 2)) + "s"), inline=False)
         await channel.send(embed=emb)
 
-
+'''
 @client.command(pass_context=True)
 async def admin_portal(ctx):
     channel = ctx.channel
@@ -415,7 +416,7 @@ async def admin_portal(ctx):
                                   , color=0x008000)
             embed2.set_footer(text='I\'m a bot. If you have questions, please contact ZombieEar')
             await channel.send(embed=embed2)
-
+'''
 
 '''
 @client.command(pass_context=True)
@@ -787,6 +788,6 @@ async def updateTimeRoles(ctx):
 
 client.loop.create_task(list_servers())
 client.loop.create_task(display())
-client.loop.create_task(update_password(client))
+#client.loop.create_task(update_password(client))
 client.loop.create_task(msg_broadcast(client))
 client.run(TOKEN, bot=True, reconnect=True)

@@ -3,10 +3,14 @@ import asyncio
 import datetime
 import requests
 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 text_file = open("StormBot.config", "r")
 BOT_CONFIG = text_file.readlines()
 text_file.close()
-api_url = str(BOT_CONFIG[1]).strip()
+key = str(BOT_CONFIG[1]).strip()
+api_url = str(BOT_CONFIG[2]).strip()
 
 
 async def msg_broadcast(client):
@@ -21,7 +25,7 @@ async def msg_broadcast(client):
         if str(nownow) == str(future):
             while temp < len(broadcast_list):
                 channel = client.get_channel(broadcast_list[temp])
-                req = str(requests.get(api_url, verify=False).content)[3:-2]
+                req = str(requests.get(api_url + "/API/MessageBroadcast.php?id=" + str(key) + "", verify=False).content)[3:-2]
                 req = req.split(";")
                 if req[1] != '':
                     embed = discord.Embed(title=req[0], url=req[1], description=req[2])

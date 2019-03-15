@@ -1,14 +1,18 @@
 import asyncio
 import time
 import discord
+import requests
 import datetime
-from db import *
 
-_sql = mssql()
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 text_file = open("StormBot.config", "r")
 BOT_CONFIG = text_file.readlines()
 text_file.close()
+
+key = str(BOT_CONFIG[1]).strip()
+api_url = str(BOT_CONFIG[2]).strip()
 
 
 async def voip_tracker(member, before, after):
@@ -29,46 +33,24 @@ async def voip_tracker(member, before, after):
                     break
                 await asyncio.sleep(1)
             duration = ((int(time.time()) - start) / 60)
-            get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ? and ServerID = ?", str(member.id), member.guild.id)
-            if get_user is 'None':
-                await add_member_database(after)
-            get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ServerID = ?"
-                                              " and datediff(dd, ActivityDate, getdate()) = 0"
-                                        , str(member.id), member.guild.id)
-            rows = get_activity.fetchall()
-            if rows == []:
-                mssql.update(_sql, "INSERT INTO DiscordActivity VALUES (?, ?, ?, ?, ?)",
-                             str(member.id), int(duration), 0, member.guild.id
-                             , datetime.datetime.now())
-            else:
-                query = "UPDATE DiscordActivity" \
-                        " SET Minutes_Voice = Minutes_Voice + ?" \
-                        " WHERE DiscordID = ? and datediff(dd, ActivityDate, getdate()) = 0"
-                mssql.update(_sql, query, duration, str(member.id))
+            send_url = api_url + "/API/VoipTracker.php?id=" + str(key) + "&UserName=" +\
+                      str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&Duration="\
+                      + str(duration) + "&ServerID=" + str(member.guild.id) + ""
+            modified_url = send_url.replace("#", "<>", 3)
+            requests.get(modified_url, verify=False)
 
 
 async def message_tracker(client, message):
     blocked_channels = ['162706186272112640']
     server = message.guild
-    sender = message.author
+    member = message.author
     if message.author == client.user:  # do not want the bot to reply to itself
         return
-    get_user = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ? and ServerID = ?", str(sender.id), sender.guild.id)
-    if get_user is 'None':
-        await add_member_database(sender)
-    get_activity = mssql.select(_sql, "SELECT * FROM DiscordActivity WHERE DiscordID = ? and ServerID = ? and "
-                                      "datediff(dd, ActivityDate, getdate()) = 0"
-                                , str(sender.id), sender.guild.id)
-    rows = get_activity.fetchall()
-    if rows == []:
-        mssql.update(_sql, "INSERT INTO DiscordActivity VALUES (?, ?, ?, ?, ?)",
-                     str(sender.id), 0, 1, message.guild.id
-                     , datetime.datetime.now())
-    else:
-        query = "UPDATE DiscordActivity" \
-                " SET Messages_Sent = Messages_Sent + ?" \
-                " WHERE DiscordID = ? and ServerID = ? and datediff(dd, ActivityDate, getdate()) = 0"
-        mssql.update(_sql, query, 1, str(sender.id), sender.guild.id)
+    send_url = api_url + "/API/MessageTracker.php?id=" + str(key) + "&UserName=" + \
+            str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&ServerID="\
+            + str(member.guild.id) + ""
+    modified_url = send_url.replace("#", "<>", 3)
+    requests.get(modified_url, verify=False)
 
 
 async def member_joined_discord(client, member):
@@ -92,29 +74,24 @@ async def member_joined_discord(client, member):
                     'them answered!', inline=False)
     embed.set_footer(text='I\'m a bot. If you have questions, please contact a Clan Leader, Admin, or Moderator!')
     await member.send(embed=embed)
-    print("-on_member_join      User Joined      User:" + str(member))
+    print(str(datetime.datetime.now()) + " -- on_member_join      User Joined      User:" + str(member))
 
 
 async def member_left_discord(client, member):
-    print('')
+    print(str(datetime.datetime.now()) + " -- MEMBER *" + str(member) + "* Has Left Discord - Removing user from DataBase")
+    send_url = api_url + "/API/RemoveMember.php?id=" + str(key) + "&DiscordID=" + str(member.id) \
+               + "&ServerID=" + str(member.guild.id) + ""
+    modified_url = send_url.replace("#", "<>", 3)
+    requests.get(modified_url, verify=False)
 
 
 async def update_member(member, before, after):
-    temp = mssql.select(_sql, "SELECT * FROM DiscordUsers WHERE DiscordID = ?", str(after.id))
-    retn = temp.fetchall()
     if before.nick != after.nick:
-        if len(retn) == 0:
-            await add_member_database(after)
-        else:
-            query = """
-                                           UPDATE DiscordUsers
-                                           SET Nickname = ?
-                                           WHERE DiscordID = ?
-                                        """
-            data = (str(after.nick), str(after.id))
-            mssql.update(_sql, query, data)
-            print("-Updated the user: " + str(after.name) + " changed Nickname from *" + str(before.nick) + "* to *"
-                  + str(after.nick) + "*")
+        send_url = api_url + "/API/UpdateNickname.php?id=" + str(key) + "&UserName=" + \
+                   str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&ServerID=" \
+                   + str(member.guild.id) + ""
+        modified_url = send_url.replace("#", "<>", 3)
+        requests.get(modified_url, verify=False)
 
     # UPDATE ROLES
     '''new_roles = ""
@@ -131,22 +108,17 @@ async def update_member(member, before, after):
         print("Update roles for " + str(member.nick) + " to " + new_roles)
 '''
     if str(before) != str(after):
-        if len(retn) == 0:
-            await add_member_database(after)
-        else:
-            sql = """
-                                           UPDATE DiscordUsers
-                                           SET UserName = ?
-                                           WHERE DiscordID = ?
-                                        """
-            data = (str(after), str(after.id))
-            mssql.update(_sql, sql, data)
-            print("-Updated the user: " + str(after.id) + " changed Username from  *" + str(before) + "* to *"
-                  + str(after) + "*")
+        send_url = api_url + "/API/UpdateMember.php?id=" + str(key) + "&UserName=" + \
+                   str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&ServerID=" \
+                   + str(member.guild.id) + ""
+        requests.get(send_url, verify=False)
 
 
 async def add_member_database(member):
-    print("Warning 0012 -- MEMBER *" + str(member) + "* NOT FOUND - Adding user to DataBase")
-    mssql.select(_sql, "INSERT INTO DiscordUsers VALUES (?, ?, ?, ?, ?, DEFAULT, ?)"
-                 , str(member), str(member.id), str(member.nick), member.guild.id, 0, datetime.datetime.now())
+    print(str(datetime.datetime.now()) + " -- MEMBER *" + str(member) + "* NOT FOUND - Adding user to DataBase")
+    send_url = api_url + "/API/AddMember.php?id=" + str(key) + "&UserName=" + \
+              str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&ServerID=" \
+              + str(member.guild.id) + ""
+    modified_url = send_url.replace("#", "<>", 3)
+    requests.get(modified_url, verify=False)
 
