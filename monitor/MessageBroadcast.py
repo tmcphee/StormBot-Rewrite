@@ -20,7 +20,7 @@ async def msg_broadcast(client):
     while not client.is_closed():
         now = datetime.datetime.now()
         nownow = now.replace(second=0, microsecond=0)
-        future = now.replace(minute=59, second=0, microsecond=0)
+        future = now.replace(minute=0, second=0, microsecond=0)
         temp = 0
         if str(nownow) == str(future):
             while temp < len(broadcast_list):

@@ -376,6 +376,7 @@ async def status(ctx):
     member = ctx.message.author
     mod_ck = moderator_check(member)
     if (mod_ck is True) or member.guild_permissions.administrator:
+        dbs = requests.get(api_url + "/API/DBStatus.php?id=" + str(key) + "", verify=False).content
         duration = float(time.time()) - systemstart
         day = duration // (24 * 3600)
         duration = duration % (24 * 3600)
@@ -387,6 +388,7 @@ async def status(ctx):
         emb = (discord.Embed(title="StormBot Status:", color=0xdc8545))
         emb.add_field(name='Uptime: ', value=("%dd %dh %dm %ds" % (day, hour, minutes, seconds)), inline=False)
         emb.add_field(name='Latency: ', value=(str(round(client.latency, 2)) + "s"), inline=False)
+        emb.add_field(name='Database: ', value=(str(dbs)[2:-1]), inline=False)
         await channel.send(embed=emb)
 
 '''

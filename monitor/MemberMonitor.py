@@ -33,11 +33,21 @@ async def voip_tracker(member, before, after):
                     break
                 await asyncio.sleep(1)
             duration = ((int(time.time()) - start) / 60)
-            send_url = api_url + "/API/VoipTracker.php?id=" + str(key) + "&UserName=" +\
-                      str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&Duration="\
-                      + str(duration) + "&ServerID=" + str(member.guild.id) + ""
-            modified_url = send_url.replace("#", "<>", 3)
-            requests.get(modified_url, verify=False)
+            try:
+                send_url = api_url + "/API/VoipTracker.php?id=" + str(key) + "&UserName=" +\
+                          str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&Duration="\
+                          + str(duration) + "&ServerID=" + str(member.guild.id) + ""
+                modified_url = send_url.replace("#", "<>", 3)
+                requests.get(modified_url, verify=False)
+            except Exception as e:
+                print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(member.guild.id) + "] -> ERROR: " + str(e) +
+                      " --> Trying again in 5 seconds")
+                await asyncio.sleep(5)
+                send_url = api_url + "/API/VoipTracker.php?id=" + str(key) + "&UserName=" + \
+                           str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&Duration=" \
+                           + str(duration) + "&ServerID=" + str(member.guild.id) + ""
+                modified_url = send_url.replace("#", "<>", 3)
+                requests.get(modified_url, verify=False)
 
 
 async def message_tracker(client, message):
@@ -55,30 +65,31 @@ async def message_tracker(client, message):
 
 async def member_joined_discord(client, member):
     await add_member_database(member)
-    embed = discord.Embed(title="Welcome to Collective Conscious.",
-                          description="CoCo is a PC-only Destiny 2 clan covering both NA and EU.", color=0x008000)
-    embed.add_field(name='1. Server nickname',
-                    value='Your nickname must match your BattleTag regardless of clan member status.\n'
-                          'Example: PeachTree#11671',
-                    inline=False)
-    embed.add_field(name='2. Clan Applications',
-                    value='Head to the #clan-application channel and apply to one of '
-                    'the clans showing as "recruiting." Once you\'ve requested '
-                    'membership, post in #request-a-rank stating the clan you '
-                    'applied to and clan staff will process your request.',
-                    inline=False)
-    embed.add_field(name='3. Clan & Discord Information',
-                    value='Please take a moment to read over server rules '
-                    'in #rules as well as Frequently Asked Questions '
-                    'in #faq before asking questions, as you may find '
-                    'them answered!', inline=False)
-    embed.set_footer(text='I\'m a bot. If you have questions, please contact a Clan Leader, Admin, or Moderator!')
-    await member.send(embed=embed)
-    print(str(datetime.datetime.now()) + " -- on_member_join      User Joined      User:" + str(member))
+    if member.guild.id == 162706186272112640:
+        embed = discord.Embed(title="Welcome to Collective Conscious.",
+                              description="CoCo is a PC-only Destiny 2 clan covering both NA and EU.", color=0x008000)
+        embed.add_field(name='1. Server nickname',
+                        value='Your nickname must match your BattleTag regardless of clan member status.\n'
+                              'Example: PeachTree#11671',
+                        inline=False)
+        embed.add_field(name='2. Clan Applications',
+                        value='Head to the #clan-application channel and apply to one of '
+                        'the clans showing as "recruiting." Once you\'ve requested '
+                        'membership, post in #request-a-rank stating the clan you '
+                        'applied to and clan staff will process your request.',
+                        inline=False)
+        embed.add_field(name='3. Clan & Discord Information',
+                        value='Please take a moment to read over server rules '
+                        'in #rules as well as Frequently Asked Questions '
+                        'in #faq before asking questions, as you may find '
+                        'them answered!', inline=False)
+        embed.set_footer(text='I\'m a bot. If you have questions, please contact a Clan Leader, Admin, or Moderator!')
+        await member.send(embed=embed)
+        print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(member.guild.id) + "] -> Issued Join message to " + str(member))
 
 
 async def member_left_discord(client, member):
-    print(str(datetime.datetime.now()) + " -- MEMBER *" + str(member) + "* Has Left Discord - Removing user from DataBase")
+    print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(member.guild.id) + "] -> MEMBER *" + str(member) + "* Has Left Discord - Removing user from DataBase")
     send_url = api_url + "/API/RemoveMember.php?id=" + str(key) + "&DiscordID=" + str(member.id) \
                + "&ServerID=" + str(member.guild.id) + ""
     modified_url = send_url.replace("#", "<>", 3)
@@ -115,7 +126,7 @@ async def update_member(member, before, after):
 
 
 async def add_member_database(member):
-    print(str(datetime.datetime.now()) + " -- MEMBER *" + str(member) + "* NOT FOUND - Adding user to DataBase")
+    print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(member.guild.id) + "] -> MEMBER *" + str(member) + "* NOT FOUND - Adding user to DataBase")
     send_url = api_url + "/API/AddMember.php?id=" + str(key) + "&UserName=" + \
               str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&ServerID=" \
               + str(member.guild.id) + ""
