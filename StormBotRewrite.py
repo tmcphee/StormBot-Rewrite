@@ -81,6 +81,16 @@ async def on_member_update(before, after):
     await update_member(after, before, after)
 
 
+@client.event
+async def on_message_delete(message):
+    await delete_message(client, message)
+
+
+@client.event
+async def on_message_edit(before, after):
+    await edit_message(client, before, after)
+
+
 @client.event  # 0004
 async def on_ready():
     try:

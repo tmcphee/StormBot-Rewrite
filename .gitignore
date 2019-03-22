@@ -6,3 +6,6 @@ StormBot_log.txt
 StormBot.log
 internalsqlite.db
 Database.config
+venv/
+.idea/
+__pycache__/

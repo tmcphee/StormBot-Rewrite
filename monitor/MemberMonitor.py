@@ -125,6 +125,41 @@ async def update_member(member, before, after):
         requests.get(send_url, verify=False)
 
 
+async def delete_message(client, message):
+    if message.author.guild.id == 162706186272112640:
+        try:
+            channel = client.get_channel(445696353503281154)
+            embed = discord.Embed(color=0xfb0404)
+            embed.set_author(name=str(message.author) + " edited their message", icon_url='' + str(message.author.avatar_url))
+            embed.add_field(value=('' + str(message.content)), inline=False)
+            embed.set_footer(text="Channel: #" + str(message.channel) + " | User ID: " + str(message.author.id))
+            await channel.send(embed=embed)
+        except Exception as e:
+            if message.content != "":
+                print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(
+                    message.author.guild.id) + "] -> Failed to capture delete message")
+
+
+async def edit_message(client, before, after):
+    if before.author.guild.id == 162706186272112640:
+        try:
+            channel = client.get_channel(445696353503281154)
+            emb = discord.Embed(color=0xeebf02)
+            emb.set_author(name=str(before.author) + " edited their message", icon_url='' + str(before.author.avatar_url))
+            emb.add_field(name='Old Message',
+                            value=('' + str(before.content)),
+                            inline=False)
+            emb.add_field(name='New Message',
+                            value=('' + str(after.content)),
+                            inline=False)
+            emb.set_footer(text=('Channel: #' + str(before.channel) + ' | User ID: ' + str(before.author.id)))
+            await channel.send(embed=emb)
+        except Exception as e:
+            if before.content != "" and after .content != "":
+                print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(
+                    before.author.guild.id) + "] -> Failed to capture edit message")
+
+
 async def add_member_database(member):
     print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(member.guild.id) + "] -> MEMBER *" + str(member) + "* NOT FOUND - Adding user to DataBase")
     send_url = api_url + "/API/AddMember.php?id=" + str(key) + "&UserName=" + \
