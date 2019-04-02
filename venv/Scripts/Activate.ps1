@@ -27,7 +27,7 @@ function global:deactivate ([switch]$NonDestructive) {
 
 deactivate -nondestructive
 
-$env:VIRTUAL_ENV="C:\Users\T\PycharmProjects\Project\StormBot-Rewrite\venv"
+$env:VIRTUAL_ENV="C:\Users\T\PycharmProjects\new\StormBot-Rewrite\venv"
 
 if (! $env:VIRTUAL_ENV_DISABLE_PROMPT) {
     # Set the prompt to include the env name

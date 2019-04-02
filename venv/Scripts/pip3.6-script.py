@@ -1,4 +1,4 @@
-#!C:\Users\T\PycharmProjects\Project\StormBot-Rewrite\venv\Scripts\python.exe
+#!C:\Users\T\PycharmProjects\new\StormBot-Rewrite\venv\Scripts\python.exe
 # EASY-INSTALL-ENTRY-SCRIPT: 'pip==9.0.3','console_scripts','pip3.6'
 __requires__ = 'pip==9.0.3'
 import re

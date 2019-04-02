@@ -1,0 +1,11 @@
+StormBot.config
+StormBot_test.config
+pythonsqlite.db
+internalsqlite.db
+StormBot_log.txt
+StormBot.log
+internalsqlite.db
+Database.config
+venv/
+.idea/
+__pycache__/
