@@ -104,20 +104,11 @@ async def update_member(member, before, after):
         modified_url = send_url.replace("#", "<>", 3)
         requests.get(modified_url, verify=False)
 
-    # UPDATE ROLES
-    '''new_roles = ""
-    if before.roles != after.roles:
-        for role in before.roles:
-            gc_roles_url = "https://cococlan.report/api/Discord/" + str(member.guild.id) + "/User/" \
-                           + str(after.id) + "/Roles/" + str(role.id) + "/Update"
-            s.get(gc_roles_url, headers=headers)
-        for role in after.roles:
-            new_roles += role.name + ", "
-            ins_roles_url = "https://cococlan.report/api/Discord/" + str(member.guild.id) + "/User/" \
-                            + str(after.id) + "/Roles/" + str(role.id) + "/Add"
-            s.get(ins_roles_url, headers=headers)
-        print("Update roles for " + str(member.nick) + " to " + new_roles)
-'''
+    '''  # UPDATE ROLES
+        if before.roles != after.roles:
+            for role in after.roles:
+    '''
+
     if str(before) != str(after):
         send_url = api_url + "/API/UpdateMember.php?id=" + str(key) + "&UserName=" + \
                    str(member) + "&DiscordID=" + str(member.id) + "&Nickname=" + str(member.nick) + "&ServerID=" \
