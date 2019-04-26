@@ -104,10 +104,24 @@ async def update_member(member, before, after):
         modified_url = send_url.replace("#", "<>", 3)
         requests.get(modified_url, verify=False)
 
-    '''  # UPDATE ROLES
-        if before.roles != after.roles:
-            for role in after.roles:
-    '''
+    #UPDATE ROLES
+    if before.roles != after.roles:
+        remove = list(set(before.roles) - set(after.roles))
+        add = list(set(after.roles) - set(before.roles))
+        if str(add) != "[]":
+            send_url = api_url + "/API/Member/AddRole.php?id=" + str(key) + "&DiscordID=" + \
+                       str(member.id) + "&RoleID=" + str(add[0].id) + "&ServerID=" + \
+                       str(member.guild.id) + ""
+            requests.get(send_url, verify=False)
+            print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(
+                after.guild.id) + "] -> Added Role *" + str(add[0]) + "* to member " + str(member))
+        if str(remove) != "[]":
+            send_url = api_url + "/API/Member/RemoveRole.php?id=" + str(key) + "&DiscordID=" + \
+                       str(member.id) + "&RoleID=" + str(remove[0].id) + "&ServerID=" + \
+                       str(member.guild.id) + ""
+            requests.get(send_url, verify=False)
+            print(str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M %p %Z")) + " -- [" + str(
+                after.guild.id) + "] -> Removed Role *" + str(remove[0]) + "* to member " + str(member))
 
     if str(before) != str(after):
         send_url = api_url + "/API/UpdateMember.php?id=" + str(key) + "&UserName=" + \

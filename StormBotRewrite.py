@@ -149,13 +149,23 @@ async def display():
     try:
         await client.wait_until_ready()
         while not client.is_closed():
-            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V3.1.2"))
+            await client.change_presence(activity=discord.Game(str(BOT_PREFIX) + "help | V3.4.2"))
             #await client.change_presence(activity=discord.Game("TEST IN PROGRESS"))
             await asyncio.sleep(600)
             #await client.change_presence(activity=discord.Game("V2.0"))
             #await asyncio.sleep(20)
     except Exception as e:
         log_exception(str(e))
+
+'''
+@client.command(pass_context=True)
+async def fupdate_server_roles(ctx):
+    channel = ctx.channel
+    message = ctx.message
+    member = ctx.message.author
+    
+    for roles in member.guild.roles:
+'''
 
 
 @client.command(pass_context=True, description="Gets the Members activity of current week."
@@ -301,7 +311,7 @@ async def change_nick(ctx):
     await member.edit(nick='test')
     print('test')
     await channel.send('<@' + str(message.id) + '> Your Nickname has been updated to \'' + content[1] + '\'')
-'''
+
 
 
 @client.command(pass_context=True)
@@ -349,7 +359,7 @@ async def announcement(ctx):
                     temp = temp + 1
         except asyncio.TimeoutError:
             await channel.send('<@' + str(member.id) + '> Command Timeout. Message Discarded')
-
+'''
 
 def fetch_roles(member):
     roles_list_ob = member.roles
